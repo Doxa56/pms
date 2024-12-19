@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Departman Listesi</title>
+  <style>
+    /* Genel stil */
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f9f9f9;
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    .container {
+      display: flex;
+      gap: 20px;
+      margin: 20px;
+    }
+
+    .departman-listesi {
+      flex: 70%;
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .departman-ekle {
+      flex: 30%;
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    h2 {
+      margin-top: 0;
+    }
+
+    .search-bar {
+      display: flex;
+      margin-bottom: 20px;
+    }
+
+    .search-bar input {
+      flex: 1;
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    .search-bar button {
+      background: #007bff;
+      color: white;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    table th, table td {
+      border: 1px solid #ccc;
+      padding: 8px;
+      text-align: left;
+    }
+
+    table th {
+      background-color: #f0f0f0;
+    }
+    
+    .pagination {
+      margin-top: 10px;
+      text-align: right;
+    }
+
+    .pagination button {
+      background: #007bff;
+      color: white;
+      border: none;
+      padding: 8px 12px;
+      margin: 0 2px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .departman-ekle label {
+      display: block;
+      margin: 10px 0 5px;
+    }
+
+    .departman-ekle input, .departman-ekle select, .departman-ekle button {
+      width: calc(100% - 20px);
+      padding: 10px;
+      margin-bottom: 10px;
+      box-sizing: border-box; 
+    }
+
+    .departman-ekle button {
+      background: #28a745;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    .success-message {
+      background: #d4edda;
+      color: #155724;
+      padding: 10px;
+      border-radius: 4px;
+      text-align: center;
+      display: none;
+    }
+
+    .toggle-switch {
+      display: inline-block;
+      width: 40px;
+      height: 20px;
+      background-color: #ccc;
+      border-radius: 20px;
+      position: relative;
+      cursor: pointer;
+      margin: 0 auto;
+    }
+
+    .toggle-switch.active {
+      background-color: #28a745;
+    }
+
+    .toggle-switch::before {
+      content: '';
+      position: absolute;
+      width: 16px;
+      height: 16px;
+      background-color: white;
+      border-radius: 50%;
+      top: 2px;
+      left: 2px;
+      transition: all 0.3s;
+    }
+
+    .toggle-switch.active::before {
+      left: 22px;
+    }
+    .delete-btn,.edit-btn {
+  background-color: #28a745; /* Yeşil renk */
+
+  border: none;
+  padding: 8px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Departman Listesi -->
+    <div class="departman-listesi">
+      <h2>Departman Listesi</h2>
+      <div class="search-bar">
+        <input type="text" placeholder="Ara...">
+        <button>🔍</button>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Departman Adı</th>
+            <th>Departman Tipi</th>
+            <th>Yetkili Personeller</th>
+            <th>Durum</th>
+            <th>İşlem</th>
+          </tr>
+        </thead>
+        <tbody id="departman-table">
+          <!-- Dinamik olarak tablonun içeriği eklenecek -->
+        </tbody>
+      </table>
+      <div class="pagination">
+        <button>Previous</button>
+        <button>Next</button>
+      </div>
+    </div>
+
+    <!-- Departman Ekle -->
+    <div class="departman-ekle">
+      <h2>Departman Ekle</h2>
+      <form id="ekle-form">
+        <label>Departman Adı</label>
+        <input type="text" id="departmanAdi" placeholder="Departman Adı">
+        
+        <label>Departman Tipi</label>
+        <select id="departmanTipi">
+          <option value="Genel Departman">Genel Departman</option>
+          <option value="Proje Departmanı">Proje Departmanı</option>
+        </select>
+        
+        <button type="submit">Departman Ekle</button>
+      </form>
+    </div>
+  </div>
+  <div class="success-message">
+    Kayıt Başarıyla Eklendi
+  </div>
+
+  <script>
+    // Başlangıçta bulunan departmanlar
+    const departmanlar = [
+      { id: 1, adi: 'YÖNETİM', tipi: 'Genel Departman', personeller: 'Personel 1', durum: true },
+      { id: 2, adi: 'OPERASYON', tipi: 'Genel Departman', personeller: 'Personel 1', durum: true },
+      { id: 3, adi: 'MUHASEBE', tipi: 'Genel Departman', personeller: 'Personel 2', durum: true },
+      { id: 4, adi: 'SATIŞ', tipi: 'Genel Departman', personeller: 'Personel 2', durum: true },
+      { id: 5, adi: 'ÇİZİM', tipi: 'Proje Departmanı', personeller: 'Personel 3, Personel 4', durum: true },
+      { id: 6, adi: 'TASARIM', tipi: 'Proje Departmanı', personeller: 'Personel 3', durum: true },
+      { id: 7, adi: 'UYGULAMA', tipi: 'Proje Departmanı', personeller: 'Personel 3', durum: true }
+    ];
+
+    // Departmanları tabloya ekleme
+    function tabloyuGuncelle() {
+      const departmanTable = document.querySelector('#departman-table');
+      departmanTable.innerHTML = ''; // Tabloyu temizle
+      departmanlar.forEach((departman) => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${departman.id}</td>
+          <td>${departman.adi}</td>
+          <td>${departman.tipi}</td>
+          <td>${departman.personeller}</td>
+          <td>
+            <div class="toggle-switch ${departman.durum ? 'active' : ''}"></div>
+          </td>
+          <td>
+            <button class="edit-btn">✏️</button>
+            <button class="delete-btn">🗑️</button>
+          </td>
+        `;
+        departmanTable.appendChild(row);
+
+        // Silme işlemi
+        row.querySelector('.delete-btn').addEventListener('click', () => {
+          const index = departmanlar.findIndex(d => d.id === departman.id);
+          if (index !== -1) {
+            departmanlar.splice(index, 1);
+            tabloyuGuncelle();
+          }
+        });
+
+        // Düzenleme işlemi
+        row.querySelector('.edit-btn').addEventListener('click', () => {
+          const yeniAd = prompt('Yeni departman adını girin:', departman.adi);
+          if (yeniAd) {
+            departman.adi = yeniAd;
+            tabloyuGuncelle();
+          }
+        });
+
+        // Durum değiştirme
+        row.querySelector('.toggle-switch').addEventListener('click', () => {
+          departman.durum = !departman.durum;
+          tabloyuGuncelle();
+        });
+      });
+    }
+
+    // Departman ekleme formu
+    document.getElementById('ekle-form').addEventListener('submit', function (e) {
+      e.preventDefault();
+      const departmanAdi = document.getElementById('departmanAdi').value.trim();
+      const departmanTipi = document.getElementById('departmanTipi').value;
+
+      if (departmanAdi) {
+        const yeniDepartman = {
+          id: departmanlar.length + 1,
+          adi: departmanAdi,
+          tipi: departmanTipi,
+          personeller: 'Yeni Personel',
+          durum: true
+        };
+        departmanlar.push(yeniDepartman);
+        tabloyuGuncelle();
+
+        // Başarı mesajı
+        const message = document.querySelector('.success-message');
+        message.style.display = 'block';
+        setTimeout(() => {
+          message.style.display = 'none';
+        }, 3000);
+      }
+    });
+
+    // Sayfa yüklendiğinde tabloyu güncelle
+    tabloyuGuncelle();
+  </script>
+</body>
+</html>

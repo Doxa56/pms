@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Geçmiş Projeler</title>
+</head>
+<body>
+    <h2>Geçmiş Projeler</h2>
+    <ul id="pastProjectsList">
+        <!-- Geçmiş projeler burada listelenecek -->
+    </ul>
+
+    <script>
+        // Kullanıcı login değilse login sayfasına yönlendir
+        function redirectToLogin() {
+            window.location.href = '/login.html';
+        }
+
+        // Token kontrolü
+        const token = localStorage.getItem('token');
+        if (!token) {
+            redirectToLogin();
+        } else {
+            // Geçmiş projeleri çek
+            fetch('/past-projects', {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Geçmiş projeler alınamadı.');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    const projectList = document.getElementById('pastProjectsList');
+                    if (data.projects.length === 0) {
+                        projectList.innerHTML = "<li>Gösterilecek geçmiş proje bulunamadı.</li>";
+                        return;
+                    }
+                    data.projects.forEach(project => {
+                        const listItem = document.createElement('li');
+                        listItem.innerHTML = `
+                            <strong>${project.project_name}</strong><br>
+                            Açıklama: ${project.description}<br>
+                            Başlangıç Tarihi: ${project.start_date}<br>
+                            Bitiş Tarihi: ${project.end_date}
+                        `;
+                        projectList.appendChild(listItem);
+                    });
+                })
+                .catch(error => {
+                    console.error('Hata:', error);
+                    document.getElementById('pastProjectsList').innerHTML = "<li>Projeler yüklenemedi.</li>";
+                });
+        }
+    </script>
+</body>
+</html>

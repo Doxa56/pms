@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <link rel="stylesheet" href="/login.css">
+</head>
+<body>
+    <div class="background">
+        <img src="/background.png" alt="Background">
+    </div>
+    <div class="container">
+        <div class="form-container">
+            <h2>Login</h2>
+            <form id="loginForm">
+                <input type="text" name="email" placeholder="E posta" required>
+                <input type="password" name="password" placeholder="Şifre" required>
+                <button type="submit">Giriş Yap</button>
+                <label for="terms" class="üye">Üye değil misiniz?
+                    <a href="/register.html" class="login-link">Üye ol</a>
+                </label>
+            </form>
+        </div>
+    </div>
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', handleLogin);
+
+        function handleLogin(event) {
+            event.preventDefault();
+            
+            // Form verilerini al
+            const email = event.target.email.value;
+            const password = event.target.password.value;
+            // fetch isteğini JSON olarak gönder
+            fetch('/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ email, password })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Login failed');
+                }
+                // Token'ı localStorage'a kaydet
+                const token = response.headers.get('Authorization').replace('Bearer ', '');
+                localStorage.setItem('token', token);
+                // Anasayfaya yönlendir
+                window.location.href = '/index.html';
+            })
+            .catch(error => console.error('Error:', error));
+        }
+    </script>
+</body>
+</html>

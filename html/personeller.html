@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personel Yönetim Sistemi</title>
+    <style>body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f4f4f9;
+    }
+    
+    .container {
+        display: flex;
+        padding: 20px;
+    }
+    
+    .personnel-list, .personnel-form {
+        background: #fff;
+        padding: 20px;
+        margin: 10px;
+        border-radius: 10px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+    
+    .personnel-list {
+        flex: 3;
+    }
+    
+    .personnel-form {
+        flex: 2;
+    }
+    
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+    }
+    
+    table th, table td {
+        padding: 10px;
+        border: 1px solid #ddd;
+        text-align: center;
+    }
+    
+    table th {
+        background-color: #f0f0f0;
+    }
+    
+    .form-group {
+        margin-bottom: 15px;
+    }
+    
+    input, select, button {
+        width: 100%;
+        padding: 8px;
+        margin-top: 5px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+    }
+    
+    button {
+        background-color: #007bff;
+        color: #fff;
+        border: none;
+        cursor: pointer;
+    }
+    
+    button:hover {
+        background-color: #0056b3;
+    }
+    
+    .pagination {
+        margin-top: 10px;
+        text-align: center;
+        font-size: 14px;
+    }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="personnel-list">
+            <h3>Personel Listesi</h3>
+            <div class="search-bar">
+                <input type="text" placeholder="Ara...">
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Ad Soyad</th>
+                        <th>GSM</th>
+                        <th>E-Posta</th>
+                        <th>Görev</th>
+                        <th>Durum</th>
+                        <th>İşlem</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>1113</td>
+                        <td>Personel 1</td>
+                        <td>***</td>
+                        <td>hasangokava34@gmail.com</td>
+                        <td>Demo Kullanıcı</td>
+                        <td><input type="checkbox" checked></td>
+                        <td>
+                            <button>Düzenle</button>
+                            <button>Sil</button>
+                        </td>
+                    </tr>
+                    <!-- Diğer satırlar buraya -->
+                </tbody>
+            </table>
+            <div class="pagination">
+                <p>3 kayıttan 1-3 arası gösteriliyor</p>
+            </div>
+        </div>
+
+        <div class="personnel-form">
+            <h3>Personel Ekle</h3>
+            <form>
+                <div class="form-group">
+                    <label>Personel Resim</label>
+                    <input type="file">
+                </div>
+                <div class="form-group">
+                    <label>Personel Ad</label>
+                    <input type="text" name="name" placeholder="Personel Ad" required>
+                </div>
+                <div class="form-group">
+                    <label>Personel Telefon</label>
+                    <input type="text" name="phone" placeholder="(532) 123 45 67">
+                </div>
+                <div class="form-group">
+                    <label>Personel E-Posta</label>
+                    <input type="email" name="email" placeholder="example@mail.com">
+                </div>
+                <div class="form-group">
+                    <label>Görev</label>
+                    <input type="text" name="role" placeholder="Görev">
+                </div>
+                <button type="submit">Kaydet</button>
+            </form>
+        </div>
+    </div>
+    <script>// DOM öğelerini seçelim
+        const personnelTableBody = document.querySelector("tbody");
+        const personnelForm = document.querySelector("form");
+        
+        // Örnek bir personel listesi (başlangıç verileri)
+        let personnelList = [
+            { id: 1113, name: "Personel 1", phone: "***", email: "hasangokava34@gmail.com", role: "Demo Kullanıcı", status: true },
+            { id: 1114, name: "Personel 2", phone: "********", email: "personel@proskop.com", role: "Demo Kullanıcı", status: true },
+            { id: 1115, name: "Personel 3", phone: "(***) ***", email: "personel2@proskop.com", role: "Demo Kullanıcı", status: true },
+        ];
+        
+        // Personel listesini tabloya yazdıran fonksiyon
+        function renderTable() {
+            // Tabloyu temizle
+            personnelTableBody.innerHTML = "";
+        
+            // Listeyi tabloya ekle
+            personnelList.forEach(person => {
+                const row = document.createElement("tr");
+        
+                row.innerHTML = `
+                    <td>${person.id}</td>
+                    <td>${person.name}</td>
+                    <td>${person.phone}</td>
+                    <td>${person.email}</td>
+                    <td>${person.role}</td>
+                    <td><input type="checkbox" ${person.status ? "checked" : ""}></td>
+                    <td>
+                        <button class="delete-btn" data-id="${person.id}">Sil</button>
+                    </td>
+                `;
+        
+                personnelTableBody.appendChild(row);
+            });
+        
+            // Silme butonlarına olay dinleyici ekle
+            document.querySelectorAll(".delete-btn").forEach(button => {
+                button.addEventListener("click", deletePersonnel);
+            });
+        }
+        
+        // Personel silme işlemi
+        function deletePersonnel(event) {
+            const idToDelete = parseInt(event.target.getAttribute("data-id"));
+            personnelList = personnelList.filter(person => person.id !== idToDelete);
+            renderTable();
+        }
+        
+        // Personel ekleme işlemi
+        personnelForm.addEventListener("submit", event => {
+            event.preventDefault();
+        
+            // Form verilerini al
+            const formData = new FormData(personnelForm);
+            const newPersonnel = {
+                id: personnelList.length ? Math.max(...personnelList.map(p => p.id)) + 1 : 1111,
+                name: formData.get("name"),
+                phone: formData.get("phone") || "Belirtilmedi",
+                email: formData.get("email") || "Belirtilmedi",
+                role: formData.get("role") || "Personel",
+                status: true,
+            };
+        
+            // Listeye ekle ve tabloyu güncelle
+            personnelList.push(newPersonnel);
+            renderTable();
+        
+            // Formu sıfırla
+            personnelForm.reset();
+        });
+        
+        // Sayfa yüklendiğinde tabloyu render et
+        document.addEventListener("DOMContentLoaded", renderTable);
+        </script>
+</body>
+</html>

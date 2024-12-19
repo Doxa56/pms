@@ -1,0 +1,483 @@
+const express = require('express');
+const sqlite3 = require('sqlite3').verbose();
+const bcrypt = require('bcrypt');
+const session = require('express-session');
+const cookieParser = require('cookie-parser');
+const bodyParser = require('body-parser');
+const multer = require('multer');
+const jwt = require('jsonwebtoken');
+const app = express();
+const port = 3000;
+
+const secret = 'secret_token'; // Tüm token işlemleri için ortak anahtar
+
+// Middleware
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
+app.use(express.static('css'));
+app.use(express.static('html'));
+app.use(express.static('image'));
+app.use(express.static('javascript'));
+
+// Session middleware
+app.use(cookieParser());
+app.use(session({
+    secret: 'session_secret_key',
+    resave: false,
+    saveUninitialized: true,
+    cookie: { maxAge: 3600000 } // 1 saatlik oturum süresi
+}));
+
+// Body-parser middleware
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+
+// Root Route to serve login page
+app.get('/', (req, res) => {
+    res.sendFile(__dirname + '/login.html');
+});
+
+// Database connection
+const db = new sqlite3.Database('./project_management.db', (err) => {
+    if (err) {
+        console.error("Error connecting to database:", err.message);
+    } else {
+        console.log("Connected to database successfully.");
+    }
+});
+
+// Middleware to protect routes
+const authenticateJWT = (req, res, next) => {
+    const authHeader = req.header('Authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return res.status(401).send('Access Denied');
+    }
+
+    const token = authHeader.replace('Bearer ', '');
+    try {
+        const verified = jwt.verify(token, secret);
+        req.user = verified;
+        next();
+    } catch (err) {
+        res.status(400).send('Invalid Token');
+    }
+};
+
+// Register Route with Token
+app.post('/register', async (req, res) => {
+    const { username, email, password } = req.body;
+
+    if (!password) {
+        return res.status(400).send("Şifre eksik.");
+    }
+
+    try {
+        const passwordHash = await bcrypt.hash(password, 10);
+        db.run(`INSERT INTO Users (username, email, password_hash) VALUES (?, ?, ?)`, [username, email, passwordHash], function (err) {
+            if (err) {
+                console.error("Register error:", err.message);
+                res.status(500).send("Database error.");
+            } else {
+                const token = jwt.sign({ userId: this.lastID, username, email }, secret, { expiresIn: '1h' });
+                res.header('Authorization', 'Bearer ' + token).send({ success: true, token });
+            }
+        });
+    } catch (error) {
+        console.error("Password hashing error:", error.message);
+        res.status(500).send("Password processing error.");
+    }
+});
+
+// Login Route
+app.post('/login', (req, res) => {
+    const { email, password } = req.body;
+
+    db.get(`SELECT * FROM Users WHERE email = ?`, [email], async (err, user) => {
+        if (err) {
+            console.error("Login error:", err.message);
+            res.status(500).send("Error during login.");
+        } else if (!user) {
+            res.status(401).send("User not found or password incorrect.");
+        } else {
+            const match = await bcrypt.compare(password, user.password_hash);
+            if (match) {
+                req.session.username = user.username;
+                req.session.userId = user.id;
+                const token = jwt.sign({ email: user.email, userId: user.id }, secret, { expiresIn: '1h' });
+                res.header('Authorization', 'Bearer ' + token).send('Logged in');
+            } else {
+                res.status(401).send("User not found or password incorrect.");
+            }
+        }
+    });
+});
+
+// Middleware to check if user is authenticated
+function checkAuth(req, res, next) {
+    if (req.session.username) {
+        next();
+    } else {
+        res.redirect('/');
+    }
+}
+
+// Route to serve index.html with username
+app.get('/index', checkAuth, (req, res) => {
+    res.sendFile(__dirname + '/html/index.html');
+});
+
+// Route to get username for index.html
+app.get('/get-username', (req, res) => {
+    const authHeader = req.headers['authorization'];
+
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return res.status(401).json({ error: 'Token not provided' });
+    }
+
+    const token = authHeader.split(' ')[1];
+
+    try {
+        const decoded = jwt.verify(token, secret);
+        const email = decoded.email;
+
+        db.get('SELECT username FROM Users WHERE email = ?', [email], (err, user) => {
+            if (err) {
+                return res.status(500).json({ error: 'Database error' });
+            }
+            if (!user) {
+                return res.status(404).json({ error: 'User not found' });
+            }
+            res.json({ username: user.username });
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(401).json({ error: 'Invalid token' });
+    }
+});
+
+// Proje oluşturma isteği işleme
+app.post('/create-project', authenticateJWT, multer().none(), (req, res) => {
+    const { projectName, description, startDate, endDate } = req.body;
+    const { email } = req.user; // Token'dan kullanıcı e-posta bilgisi alınıyor
+
+    if (!projectName || !description || !startDate || !endDate) {
+        return res.status(400).json({ success: false, message: 'Lütfen tüm alanları doldurun.' });
+    }
+
+    // Kullanıcı ID'sini e-posta üzerinden al
+    db.get('SELECT user_id FROM Users WHERE email = ?', [email], (err, user) => {
+        if (err || !user) {
+            console.error("Kullanıcı bulunamadı veya bir hata oluştu:", err?.message || 'No user found');
+            return res.status(404).json({ success: false, message: 'Kullanıcı bulunamadı.' });
+        }
+
+        const userId = user.user_id;
+        const query = `
+            INSERT INTO Projects (project_name, description, start_date, end_date, created_by, owner_id)
+            VALUES (?, ?, ?, ?, ?, ?)
+        `;
+
+        db.run(query, [projectName, description, startDate, endDate, userId, userId], function (err) {
+            if (err) {
+                console.error("Proje eklenemedi:", err.message);
+                return res.status(500).json({ success: false, message: 'Proje eklenirken bir hata oluştu.' });
+            }
+            res.status(201).json({ success: true, message: 'Proje başarıyla oluşturuldu.', projectId: this.lastID });
+            console.log("Yeni proje eklendi, proje ID'si:", this.lastID);
+        });
+    });
+});
+
+// Mevcut projeleri listeleme
+app.get('/current-projects', authenticateJWT, (req, res) => {
+    const { email } = req.user; // Token'dan kullanıcı e-posta bilgisi alınıyor
+
+    // Kullanıcı ID'sini e-posta üzerinden al
+    db.get('SELECT user_id FROM Users WHERE email = ?', [email], (err, user) => {
+        if (err || !user) {
+            console.error("Kullanıcı bulunamadı veya bir hata oluştu:", err?.message || 'No user found');
+            return res.status(404).json({ projects: [], message: 'Kullanıcı bulunamadı.' });
+        }
+
+        const userId = user.user_id;
+        const query = `SELECT * FROM Projects WHERE end_date > CURRENT_DATE AND (created_by = ? OR owner_id = ?)`;
+        db.all(query, [userId, userId], (err, rows) => {
+            if (err) {
+                console.error("Mevcut projeler alınamadı:", err.message);
+                return res.status(500).json({ projects: [], message: 'Projeler alınırken bir hata oluştu.' });
+            }
+            res.json({ projects: rows });
+        });
+    });
+});
+
+// Geçmiş projeleri listeleme
+app.get('/past-projects', authenticateJWT, (req, res) => {
+    const { email } = req.user; // Token'dan kullanıcı e-posta bilgisi alınıyor
+
+    // Kullanıcı ID'sini e-posta üzerinden al
+    db.get('SELECT user_id FROM Users WHERE email = ?', [email], (err, user) => {
+        if (err || !user) {
+            console.error("Kullanıcı bulunamadı veya bir hata oluştu:", err?.message || 'No user found');
+            return res.status(404).json({ projects: [], message: 'Kullanıcı bulunamadı.' });
+        }
+
+        const userId = user.user_id;
+        const query = `SELECT * FROM Projects WHERE end_date <= CURRENT_DATE AND (created_by = ? OR owner_id = ?)`;
+        db.all(query, [userId, userId], (err, rows) => {
+            if (err) {
+                console.error("Geçmiş projeler alınamadı:", err.message);
+                return res.status(500).json({ projects: [], message: 'Projeler alınırken bir hata oluştu.' });
+            }
+            res.json({ projects: rows });
+        });
+    });
+});
+
+// Logout Route
+app.post('/logout', (req, res) => {
+    req.session.destroy(err => {
+        if (err) {
+            return res.status(500).send('Logout failed.');
+        }
+        res.clearCookie('connect.sid');
+        res.status(200).send('Logged out successfully.');
+    });
+});
+app.post('/update-firm-info', authenticateJWT, (req, res) => {
+    const { firmaAdi, firmaTelefon, yetkiliKisi, firmaGSM, firmaSehir, firmaVergiDairesi, firmaVergiNo, firmaIlce, firmaAdres, tema } = req.body;
+    const { email } = req.user;
+
+    const selectQuery = `
+        SELECT COUNT(*) AS count
+        FROM Firmalar
+        WHERE user_email = ?;
+    `;
+
+    db.get(selectQuery, [email], (err, row) => {
+        if (err) {
+            console.error("Database error:", err.message);
+            return res.status(500).json({ success: false, message: "Sorgulama sırasında bir hata oluştu." });
+        }
+
+        const isRecordExists = row.count > 0;
+
+        if (isRecordExists) {
+            // Kayıt varsa UPDATE işlemi
+            const updateQuery = `
+                UPDATE Firmalar
+                SET firma_adi = ?, telefon = ?, yetkili_kisi = ?, gsm = ?, sehir = ?, vergi_dairesi = ?, vergi_no = ?, ilce = ?, adres = ?, tema = ?
+                WHERE user_email = ?;
+            `;
+
+            db.run(updateQuery, [firmaAdi, firmaTelefon, yetkiliKisi, firmaGSM, firmaSehir, firmaVergiDairesi, firmaVergiNo, firmaIlce, firmaAdres, tema, email], function (err) {
+                if (err) {
+                    console.error("Database error:", err.message);
+                    return res.status(500).json({ success: false, message: "Güncelleme sırasında bir hata oluştu." });
+                }
+                res.status(200).json({ success: true, message: "Firma bilgileri güncellendi." });
+            });
+        } else {
+            // Kayıt yoksa INSERT işlemi
+            const insertQuery = `
+                INSERT INTO Firmalar (firma_adi, telefon, yetkili_kisi, gsm, sehir, vergi_dairesi, vergi_no, ilce, adres, tema, user_email)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+            `;
+
+            db.run(insertQuery, [firmaAdi, firmaTelefon, yetkiliKisi, firmaGSM, firmaSehir, firmaVergiDairesi, firmaVergiNo, firmaIlce, firmaAdres, tema, email], function (err) {
+                if (err) {
+                    console.error("Database error:", err.message);
+                    return res.status(500).json({ success: false, message: "Ekleme sırasında bir hata oluştu." });
+                }
+                res.status(200).json({ success: true, message: "Firma bilgileri eklendi." });
+            });
+        }
+    });
+});
+
+
+// Multer ayarları (Dosya yükleme için)
+const upload = multer({ dest: 'uploads/' });
+
+// Destek talebi ekleme
+app.post('/add-support-request', authenticateJWT, upload.single('file'), (req, res) => {
+    const { departman, konu, aciklama } = req.body;
+    const { email } = req.user; // Kullanıcının e-posta adresi
+    const dosyaAdi = req.file ? req.file.filename : null;
+
+    const query = `
+        INSERT INTO DestekTalepleri (user_email, departman, konu, aciklama, dosya_adi)
+        VALUES (?, ?, ?, ?, ?);
+    `;
+
+    db.run(query, [email, departman, konu, aciklama, dosyaAdi], function (err) {
+        if (err) {
+            console.error("Database error:", err.message);
+            return res.status(500).json({ success: false, message: "Destek talebi eklenirken hata oluştu." });
+        }
+        res.status(200).json({ success: true, message: "Destek talebi başarıyla oluşturuldu.", id: this.lastID });
+    });
+});
+
+// Kullanıcının destek taleplerini listeleme
+app.get('/get-support-requests', authenticateJWT, (req, res) => {
+    const { email } = req.user;
+
+    const query = `
+        SELECT id, departman, konu, durum, eklenme_tarihi
+        FROM DestekTalepleri
+        WHERE user_email = ?;
+    `;
+
+    db.all(query, [email], (err, rows) => {
+        if (err) {
+            console.error("Database error:", err.message);
+            return res.status(500).json({ success: false, message: "Talepler alınırken hata oluştu." });
+        }
+        res.status(200).json({ success: true, data: rows });
+    });
+});
+
+// Destek talebini güncelleme (Durum değiştirme)
+app.post('/update-support-request', authenticateJWT, (req, res) => {
+    const { id, durum } = req.body;
+    const { email } = req.user;
+
+    const query = `
+        UPDATE DestekTalepleri
+        SET durum = ?
+        WHERE id = ? AND user_email = ?;
+    `;
+
+    db.run(query, [durum, id, email], function (err) {
+        if (err) {
+            console.error("Database error:", err.message);
+            return res.status(500).json({ success: false, message: "Talep güncellenirken hata oluştu." });
+        }
+
+        if (this.changes === 0) {
+            return res.status(404).json({ success: false, message: "Talep bulunamadı." });
+        }
+
+        res.status(200).json({ success: true, message: "Talep başarıyla güncellendi." });
+    });
+});
+app.post('/add-note', authenticateJWT, (req, res) => {
+    const { note_content, note_date } = req.body; // Kullanıcıdan gelen alanlar
+    const { email } = req.user; // Token'dan gelen email
+
+    // Kullanıcının user_id'sini almak
+    const userQuery = `SELECT user_id FROM Users WHERE email = ?`;
+    db.get(userQuery, [email], (err, user) => {
+        if (err || !user) {
+            console.error("Kullanıcı doğrulama hatası:", err?.message);
+            return res.status(404).json({ success: false, message: "Kullanıcı doğrulanamadı." });
+        }
+
+        const userId = user.user_id;
+
+        // Calendar tablosuna not ekleme
+        const insertQuery = `
+            INSERT INTO Calendar (event_description, user_input_date, created_by)
+            VALUES (?, ?, ?)
+        `;
+
+        db.run(insertQuery, [note_content, note_date, userId], function (err) {
+            if (err) {
+                console.error("Veritabanı ekleme hatası:", err.message);
+                return res.status(500).json({ success: false, message: "Not eklenirken bir hata oluştu." });
+            }
+            res.status(200).json({ success: true, event_id: this.lastID });
+        });
+    });
+});
+app.get('/get-notes', authenticateJWT, (req, res) => {
+    const { email } = req.user; // Token'dan email bilgisi
+
+    // Kullanıcının user_id'sini almak
+    const userQuery = `SELECT user_id FROM Users WHERE email = ?`;
+    db.get(userQuery, [email], (err, user) => {
+        if (err || !user) {
+            console.error("Kullanıcı doğrulama hatası:", err?.message);
+            return res.status(404).json({ success: false, message: "Kullanıcı doğrulanamadı." });
+        }
+
+        const userId = user.user_id;
+
+        // Calendar tablosundan notları listeleme
+        const selectQuery = `
+            SELECT event_id, event_description, user_input_date, created_at
+            FROM Calendar
+            WHERE created_by = ?
+            ORDER BY created_at DESC
+        `;
+
+        db.all(selectQuery, [userId], (err, rows) => {
+            if (err) {
+                console.error("Veritabanı sorgu hatası:", err.message);
+                return res.status(500).json({ success: false, message: "Notlar alınırken bir hata oluştu." });
+            }
+            res.status(200).json({ success: true, data: rows });
+        });
+    });
+});
+
+app.post('/add-task', authenticateJWT, (req, res) => {
+    const { task_name, description, due_date, status, project_id } = req.body;
+    const { email } = req.user; // Token'dan email bilgisi
+
+    // Kullanıcının user_id'sini email ile buluyoruz.
+    const getUserIdQuery = `SELECT user_id FROM Users WHERE email = ?`;
+    db.get(getUserIdQuery, [email], (err, user) => {
+        if (err) {
+            console.error("Kullanıcı bilgisi alınamadı:", err.message);
+            return res.status(500).json({ success: false, message: "Kullanıcı bilgisi alınamadı." });
+        }
+
+        if (!user) {
+            return res.status(404).json({ success: false, message: "Kullanıcı bulunamadı." });
+        }
+
+        const userId = user.user_id;
+
+        // Görev ekleme sorgusu
+        const insertTaskQuery = `
+            INSERT INTO Tasks (task_name, description, due_date, status, assigned_to, project_id)
+            VALUES (?, ?, ?, ?, ?, ?);
+        `;
+        db.run(insertTaskQuery, [task_name, description, due_date, status, userId, project_id], function (err) {
+            if (err) {
+                console.error("Görev eklenirken hata oluştu:", err.message);
+                return res.status(500).json({ success: false, message: "Görev eklenirken hata oluştu." });
+            }
+            res.status(200).json({ success: true, message: "Görev başarıyla eklendi.", id: this.lastID });
+        });
+    });
+});
+
+
+// Görevleri Listele
+app.get('/get-tasks', authenticateJWT, (req, res) => {
+    const { email } = req.user;
+
+    const query = `
+        SELECT t.task_id, t.task_name, t.description, t.due_date, t.status, t.created_at
+        FROM Tasks t
+        JOIN Users u ON t.assigned_to = u.user_id
+        WHERE u.email = ?
+        ORDER BY t.due_date ASC;
+    `;
+    db.all(query, [email], (err, rows) => {
+        if (err) {
+            console.error("Database error:", err.message);
+            return res.status(500).json({ success: false, message: "Görevler alınırken hata oluştu." });
+        }
+        res.status(200).json({ success: true, data: rows });
+    });
+});
+
+
+// Start server
+app.listen(port, () => {
+    console.log(`Server is running at http://localhost:${port}/login.html`);
+});

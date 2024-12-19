@@ -1,0 +1,276 @@
+/* Genel Stil Ayarları */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: #f4f4f9;
+}
+
+/* Navbar Stili */
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #72aded;
+  color: white;
+  padding: 10px 20px;
+  width: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1000;
+  height: 60px;
+  transition: transform 0.3s ease;
+}
+
+
+/* Navbar Sol Taraf */
+.navbar-left .brand {
+  font-size: 1.5em;
+  color: white;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+
+
+/* Navbar Sağ Taraf */
+.navbar-right {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.notification-icon,
+.profile-icon,
+.dropdown-icon {
+  font-size: 1.2em;
+  cursor: pointer;
+}
+
+.username {
+  font-size: 1em;
+}
+
+/* Bildirim Noktası */
+.notification-icon {
+  position: relative;
+}
+
+.notification-icon::after {
+  content: '';
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  width: 8px;
+  height: 8px;
+  background-color: red;
+  border-radius: 50%;
+}
+
+/* Dropdown Menü */
+.profile-dropdown {
+  position: relative;
+}
+
+.dropdown-menu {
+  display: none;
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background-color: #fff;
+  color: #333;
+  width: 150px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 5px;
+  overflow: hidden;
+  z-index: 1000;
+}
+
+.dropdown-menu a {
+  display: block;
+  padding: 10px;
+  text-decoration: none;
+  color: #333;
+  font-size: 14px;
+}
+
+.dropdown-menu a:hover {
+  background-color: #f0f0f0;
+}
+
+/* Sol Menü Stil Ayarları */
+.sidebar {
+  width: 225px;
+  background-color: #ffffff;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+  padding: 0px 0 5px 0; /* Navbar altında başlasın */
+  position: fixed;
+  top: 60px; /* Navbar yüksekliği kadar boşluk bırak */
+  left: 0;
+  height: calc(100vh - 60px);
+  overflow-y: auto;
+}
+
+.menu {
+  list-style-type: none;
+  padding: 0;
+}
+
+.menu li {
+  margin-bottom: 3px;
+}
+
+.menu li a {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  font-size: 14px;
+  color: #333;
+  padding: 4px 3px;
+  border-radius: 5px;
+  transition: background-color 0.3s;
+}
+
+.menu li a:hover {
+  background-color: #f0f0f0;
+}
+.menu li a.active {
+  font-weight: bold;
+  color: #007bff;
+}
+/* İkon Stili */
+.icon {
+  display: inline-block;
+  width: 12%;
+  height: 12%;
+  margin-right: 12px;
+  text-align: center;
+  line-height: 24px;
+  border-radius: 50%;
+  font-size: 16px;
+  color: #fff;
+}
+
+
+/* + butonunun stili */
+.plus-button {
+  background: none;
+  border: none;
+  color: black; /* Rengi siyah yapma */
+  cursor: pointer;
+  outline: none;
+text-align: right; /* Tam sola hizalama */
+  display: block; /* Alt alta yerleştirme */
+  width: 70%;
+ /* Tam genişlik */
+ /* Üstten ve alttan boşluk bırak */
+}
+
+.plus-button:hover {
+  color: #333; /* Üzerine gelince koyu siyah */
+}
+
+
+
+/* Renk Ayarları */
+.blue { background-color: #1E90FF; }
+.pink { background-color: #FF69B4; }
+.yellow { background-color: #FFD700; }
+.orange { background-color: #FFA500; }
+.purple { background-color: #800080; }
+.teal { background-color: #008080; }
+.violet { background-color: #EE82EE; }
+.red { background-color: #FF6347; }
+.green { background-color: #32CD32; }
+.light-blue { background-color: #87CEEB; }
+.light-green { background-color: #90EE90; }
+.gray { background-color: #A9A9A9; }
+.cyan { background-color: #00CED1; }
+
+
+
+
+
+
+/* İçerik Bölümü */
+.content {
+  margin-left: 225px; /* Sidebar genişliği kadar boşluk bırak */
+  padding: 80px 20px 20px 20px; /* Üstten navbar boşluğu ve iç padding */
+}
+
+
+/* Metinleri gizle */
+/* Medya Sorgusu: Küçük ekranlar için ayarlamalar */
+@media (max-width: 768px) {
+  .sidebar {
+      width: 60px; /* Sidebar genişliğini küçült */
+  }
+
+  .sidebar .menu li a {
+      justify-content: center; /* İkonların ortalanması */
+  }
+
+  .sidebar .menu li a .text {
+      display: none; /* Metinleri gizle */
+  }
+
+  .icon {
+      width: 25px; /* İkon boyutunu ayarla */
+      height: 25px; /* İkon boyutunu ayarla */
+      font-size: 20px; /* İkon yazı boyutunu ayarla */
+  }
+
+  /* Artı butonunu ve alt menüleri gizle */
+  .plus-button {
+      display: none; /* Artı butonunu gizle */
+  }
+
+  .submenu-container{
+      display: none; /* Alt menüyü gizle */
+  }
+}
+
+
+/* Alt menü çizgisi */
+.submenu-container {
+  position: relative;
+  margin-left: 25px;
+} 
+
+.line {
+  position: absolute;
+  left: -10px;
+  width: 2px;
+  height: 100%;
+  background-color: #007bff;
+}
+
+/* Hareket eden yuvarlak */
+.circle {
+  position: absolute;
+  left: -16px;
+  width: 8px;
+  height: 8px;
+  background-color: #007bff;
+  border-radius: 50%;
+  top: 0;
+  transition: top 0.3s;
+}
+.circle.hidden {
+  display: none; /* Yuvarlağı gizle */
+}
+
+.submenu {
+  display: none;
+  list-style-type: none;
+}
+
+

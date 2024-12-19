@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Görev Listesi</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f9fafc;
+      margin: 0;
+      padding: 20px;
+      min-height: 100vh;
+    }
+
+    .container {
+      display: flex;
+  gap: 10px;
+  width: 90%; /* Sayfanın %90'ını kapsar */
+  margin: 0 auto;
+    }
+    
+    .toggle-switch {
+      display: inline-block;
+      width: 40px;
+      height: 20px;
+      background-color: #ccc;
+      border-radius: 20px;
+      position: relative;
+      cursor: pointer;
+    }
+
+    .toggle-switch.active {
+      background-color: #007bff;
+    }
+
+    .toggle-switch::before {
+      content: '';
+      position: absolute;
+      width: 16px;
+      height: 16px;
+      background-color: white;
+      border-radius: 50%;
+      top: 2px;
+      left: 2px;
+      transition: all 0.3s;
+    }
+
+    .toggle-switch.active::before {
+      left: 22px;
+    }
+
+
+    .task-list,
+    .add-task {
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      padding: 20px;
+    }
+
+    .task-list {
+      flex: 2;
+    }
+
+    .add-task {
+      flex: 1;
+    }
+
+    h2 {
+      margin: 0 0 20px;
+      font-size: 18px;
+      color: #333;
+    }
+
+    .search-bar {
+      display: flex;
+      margin-bottom: 20px;
+    }
+
+    .search-bar input {
+      flex: 1;
+      padding: 5px 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px 0 0 4px;
+    }
+
+    .search-bar button {
+      padding: 5px 15px;
+      background-color: #007bff;
+      border: none;
+      color: white;
+      cursor: pointer;
+      border-radius: 0 4px 4px 0;
+    }
+
+    table {
+      width: 100%; /* Sayfa genişliğine göre esner */
+  max-width: 100%; /* Taşmayı önler */
+  border-collapse: collapse;
+    }
+
+    table th,
+    table td {
+      text-align: left;
+  padding: 10px 15px; /* İçerik dolgu ayarları */
+  border: 1px solid #ddd;
+  word-wrap: break-word;
+    }
+
+    table th {
+      background-color: #f5f5f5;
+    }
+
+    table td input[type="checkbox"] {
+      cursor: pointer;
+    }
+
+    table td button {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    table td button.edit {
+      color: #007bff;
+    }
+
+    table td button.delete {
+      color: #dc3545;
+    }
+
+    .pagination {
+      margin-top: 10px;
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+    }
+
+    .pagination button {
+      padding: 5px 10px;
+      background-color: #007bff;
+      border: none;
+      color: white;
+      cursor: pointer;
+      border-radius: 4px;
+      margin-right: 10px;
+    }
+    .add-task input, .add-task button {
+  display: block;
+  width: calc(100% - 20px); /* Padding ve margin uyumu sağlandı */
+  margin: 0 auto 10px auto; /* Ortalanmış ve aralarına boşluk eklenmiş */
+  padding: 10px;
+  border-radius: 4px;
+  border: 1px solid #ccc; /* Butonun sınırı */
+  box-sizing: border-box; /* İçerik taşmasını engelle */
+}
+
+.add-task button {
+  background-color: #28a745;
+  color: white;
+  cursor: pointer;
+}
+    
+    /* Medya sorgusu: Ekran 768px altına düşünce */
+    @media (max-width: 768px) {
+      .container {
+        flex-direction: column;
+        /* Dikey hizalama */
+        align-items: stretch;
+        /* Elemanlar tam genişlikte */
+      }
+
+      .task-list,
+      .add-task {
+        width: 100%;
+        margin-bottom: 20px;
+        /* Elemanlar tam genişlikte */
+      }
+
+      table {
+        display: block;
+        /* Tabloyu kaydırılabilir yap */
+        overflow-x: auto;
+        /* Yatay kaydırma çubuğu ekle */
+        white-space: nowrap;
+        /* Satır kırılmasını engelle */
+      }
+
+      table th,
+      table td {
+        font-size: 14px;
+        /* Daha kompakt bir görünüm için yazı boyutunu küçült */
+         /* padding: 4px;  */
+        /* Hücre dolgusunu azalt */
+      }
+
+      table td button {
+        display: inline-block;
+        /* Butonları yan yana tut */
+        margin-right: 5px;
+        /* Aralarına boşluk ekle */
+      }
+      
+
+
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <div class="task-list">
+      <h2>Görev Listesi</h2>
+      <div class="search-bar">
+        <input type="text" placeholder="Ara">
+        <button>🔍</button>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Görev Adı</th>
+            <th>Durum</th>
+            <th>İşlem</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>1080</td>
+            <td>Demo Kullanıcı</td>
+            <td>
+              <div class="toggle-switch active"></div>
+            </td>
+            <td>
+              <button class="edit">✏️</button>
+              <button class="delete">🗑️</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="pagination">
+        <button>Previous</button>
+        <button>Next</button>
+      </div>
+    </div>
+    <div class="add-task">
+      <h2>Görev Ekle</h2>
+      <input type="text" placeholder="Görev Adı">
+      <button>Görev Ekle</button>
+    </div>
+  </div>
+  <script>
+    document.querySelector('.add-task button').addEventListener('click', () => {
+      const taskName = document.querySelector('.add-task input').value.trim();
+      if (taskName) {
+        const table = document.querySelector('table tbody');
+        const row = document.createElement('tr');
+  
+        row.innerHTML = `
+          <td>${Math.floor(Math.random() * 1000)}</td>
+          <td>${taskName}</td>
+          <td>
+            <div class="toggle-switch active"></div>
+          </td>
+          <td>
+            <button class="edit">✏️</button>
+            <button class="delete">🗑️</button>
+          </td>
+        `;
+  
+        // Düzenleme Butonuna Event Listener Ekle
+        row.querySelector('.edit').addEventListener('click', () => {
+          const currentTaskName = row.cells[1].textContent;
+          const newTaskName = prompt("Görev adını düzenleyin:", currentTaskName);
+          if (newTaskName) {
+            row.cells[1].textContent = newTaskName;
+          }
+        });
+  
+        // Silme Butonuna Event Listener Ekle
+        row.querySelector('.delete').addEventListener('click', () => {
+          row.remove();
+        });
+  
+        // Tabloya Yeni Satırı Ekle
+        table.appendChild(row);
+  
+        // Giriş Alanını Temizle
+        document.querySelector('.add-task input').value = '';
+      }
+    });
+  
+    // Silme İşlemi için Mevcut Tablodaki Butonlara Event Listener
+    document.querySelector('table').addEventListener('click', (event) => {
+      if (event.target.classList.contains('delete')) {
+        event.target.closest('tr').remove();
+      }
+    });
+  
+    // Toggle Switch Aktif/Pasif Değişimi
+    document.querySelector('table').addEventListener('click', (event) => {
+      if (event.target.classList.contains('toggle-switch')) {
+        event.target.classList.toggle('active');
+      }
+    });
+  </script>
+  
+</body>
+
+</html>

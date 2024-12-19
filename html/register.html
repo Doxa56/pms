@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register</title>
+    <link rel="stylesheet" href="/register.css">
+</head>
+<body>
+    <div class="background">
+        <img src="/register.png" alt="Background">
+    </div>
+    <div class="container">
+        <div class="form-container">
+            <h2>Register</h2>
+            <!-- 'onsubmit' kaldırıldı, form direkt submit olacak -->
+            <form action="/register" method="post">
+                <input type="text" name="username" placeholder="Kullanıcı Adı" required>
+                <input type="text" name="email" placeholder="Email" required>
+                <input type="password" name="password" placeholder="Şifre" required>
+                <div class="checkbox-container">
+                    <input type="checkbox" id="terms" required>
+                    <label for="terms">Üyelik sözleşmesini kabul ediyorum.</label>
+                </div>
+                <button type="submit">Kaydol</button>
+                <label class="üye">Zaten üye misiniz?
+                    <a href="/login.html" class="login-link">Giriş Yap</a>
+                </label>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

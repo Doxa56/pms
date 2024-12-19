@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/index.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <title>Anasayfa</title>
+ 
+</head>
+<body>
+   <!-- Navbar -->
+   <nav class="navbar">
+       <div class="navbar-left">
+           <a href="#" class="brand">Pro</a>
+          
+       </div>
+       <div class="navbar-right">
+           <i class="fas fa-bell notification-icon"></i>
+           <div class="profile-dropdown">
+               <i class="fas fa-user profile-icon"></i>
+               <span class="username" id="username">Personel 1</span>
+               <i class="fas fa-caret-down dropdown-icon" id="dropdownToggle"></i>
+               <div class="dropdown-menu" id="dropdownMenu">
+                <li><a href="#" onclick="logout()"><span class="icon red"><i class="fas fa-sign-out-alt"></i></span><span class="text">Çıkış</span></a></li>
+                <li><a href="#"><span class="icon green"><i class="fas fa-user-cog"></i></span><span class="text">Ayarlar</span></a></li>
+                   <a href="#">Personel 1</a>
+                   <a href="#">Personel 2</a>
+                   <a href="#">Personel 3</a>
+                   <a href="#">Personel 4</a>
+               </div>
+           </div>
+       </div>
+   </nav>
+
+   <!-- Sol Menü (Sidebar) -->
+   <div class="sidebar">
+       <ul class="menu">
+           <li><a href="pano.html"><span class="icon blue"><i class="fas fa-home"></i></span><span class="text">Pano</span></a></li>
+           <li><a href="işlistesi.html"><span class="icon pink"><i class="fas fa-tasks"></i></span><span class="text">İş Listesi</span></a></li>
+           <li><a href="ajanda.html"><span class="icon yellow"><i class="fas fa-calendar-alt"></i></span><span class="text">Ajanda</span></a></li>
+           <li>
+            <a href="#">
+                <span class="icon purple"><i class="fas fa-project-diagram"></i></span><span class="text">Projeler</span>
+                <button class="plus-button" onclick="toggleSubMenu('projelerSubmenu', 'circle-projeler')">+</button>
+            </a>
+            <div class="submenu-container">
+                <div class="line"></div>
+                <div id="circle-projeler" class="circle hidden"></div>
+                <ul class="submenu" id="projelerSubmenu">
+                    <li><a href="/new-project.html" onclick="moveCircle('circle-projeler', this)">Yeni Proje oluşturma</a></li>
+                    <li><a href="current-projects.html" onclick="moveCircle('circle-projeler', this)" id="currentProjects">Mevcut Projeler</a></li>
+                    <li><a href="past-projects.html" onclick="moveCircle('circle-projeler', this)" id="pastProjects">Geçmiş Projeler</a></li>
+                </ul>
+            </div>
+        </li>
+           <li><a href="personeller.html"><span class="icon teal"><i class="fas fa-user-friends"></i></span><span class="text">Personeller</span></a></li>
+           <li>
+            <a href="#">
+                <span class="icon light-blue"><i class="fas fa-chart-bar"></i></span><span class="text">Raporlar</span>
+                <button class="plus-button" onclick="toggleSubMenu('raporlarSubmenu', 'circle-raporlar')">+</button>
+            </a>
+            <div class="submenu-container">
+                <div class="line"></div>
+                <div id="circle-raporlar" class="circle hidden"></div>
+                <ul class="submenu" id="raporlarSubmenu">
+                    <li><a href="satısrapor.html" onclick="moveCircle('circle-raporlar', this)">Satış Raporları</a></li>
+                    <li><a href="gelirgiderrapor.html" onclick="moveCircle('circle-raporlar', this)">Gelir Gider Raporları</a></li>
+                </ul>
+            </div>
+        </li>
+        <li>
+            <a href="#">
+                <span class="icon light-green"><i class="fas fa-cogs"></i></span><span class="text">Tanımlar</span>
+                <button class="plus-button" onclick="toggleSubMenu('tanımlarSubmenu', 'circle-tanımlar')">+</button>
+            </a>
+            <div class="submenu-container">
+                <div class="line"></div>
+                <div id="circle-tanımlar" class="circle hidden"></div>
+                <ul class="submenu" id="tanımlarSubmenu">
+                    <li><a href="projedurum.html" onclick="moveCircle('circle-tanımlar', this)">Proje Durum Tanımlamaları</a></li>
+                    <li><a href="departman.html" onclick="moveCircle('circle-tanımlar', this)">Departman Tanımlamaları</a></li>
+                    <li><a href="görev.html" onclick="moveCircle('circle-tanımlar', this)">Görev Tanımlamaları</a></li>
+                </ul>
+            </div>
+        </li>
+           <li><a href="ayarlar.html"><span class="icon gray"><i class="fas fa-wrench"></i></span><span class="text">Ayarlar</span></a></li>
+           <li><a href="destek.html"><span class="icon cyan"><i class="fas fa-comments"></i></span><span class="text">Destek</span></a></li>
+       </ul>
+   </div>
+
+   <!-- İçerik Bölümü -->
+   <div class="content">
+      
+       <div id="projectContent"></div>
+   </div>
+
+   <script src="/index.js"></script>
+</body>
+</html>

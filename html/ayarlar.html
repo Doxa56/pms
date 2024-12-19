@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firma Bilgileri</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .form-container {
+            display: grid;
+            grid-template-columns: 48% 48%;
+            justify-content: space-between;
+            gap: 15px;
+        }
+        .form-container label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .form-container input,
+        .form-container select,
+        .form-container textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .form-container textarea {
+            resize: none;
+            height: 40px;
+        }
+        .form-container .half-width {
+            grid-column: span 1;
+        }
+
+        #guncelleBtn {
+            padding: 8px 20px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        #guncelleBtn:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <h1>Firma Bilgileri</h1>
+    <form id="firmaForm">
+        <div class="form-container">
+            <div>
+                <label>Firma Adı</label>
+                <input type="text" id="firmaAdi" value="Firma 1">
+            </div>
+            <div>
+                <label>Firma Telefon</label>
+                <input type="text" id="firmaTelefon" value="05375218917">
+            </div>
+
+            <div>
+                <label>Yetkili Kişi</label>
+                <input type="text" id="yetkiliKisi" value="Personel 1">
+            </div>
+            <div>
+                <label>Firma GSM</label>
+                <input type="text" id="firmaGSM" value="05375218917">
+            </div>
+
+            <div>
+                <label>Firma Şehir</label>
+                <input type="text" id="firmaSehir" value="Adana">
+            </div>
+            <div>
+                <label>Firma Vergi Dairesi</label>
+                <input type="text" id="firmaVergiDairesi" value="******">
+            </div>
+
+            <div>
+                <label>Firma İlçe</label>
+                <select id="firmaIlce">
+                    <option value="Aladağ" selected>Aladağ (Karaisalı)</option>
+                </select>
+            </div>
+            <div>
+                <label>Firma Vergi No</label>
+                <input type="text" id="firmaVergiNo" value="******">
+            </div>
+
+            <div class="half-width">
+                <label>Firma Adres</label>
+                <textarea id="firmaAdres"></textarea>
+            </div>
+            <div class="half-width">
+                <label>Tema</label>
+                <select id="tema">
+                    <option value="Tema 1">Tema 1</option>
+                    <option value="Tema 2">Tema 2</option>
+                    <option value="Tema 3">Tema 3</option>
+                    <option value="Tema 4" selected>Tema 4</option>
+                </select>
+            </div>
+        </div>
+        <button type="button" id="guncelleBtn">Firma bilgilerini Güncelle</button>
+    </form>
+
+    <script>
+        document.getElementById("guncelleBtn").addEventListener("click", function () {
+            const token = localStorage.getItem('token'); // Token'i localStorage'dan al
+            if (!token) {
+                alert("Oturum açmanız gerekiyor!");
+                window.location.href = "/login.html";
+                return;
+            }
+
+            const formData = {
+                firmaAdi: document.getElementById("firmaAdi").value,
+                firmaTelefon: document.getElementById("firmaTelefon").value,
+                yetkiliKisi: document.getElementById("yetkiliKisi").value,
+                firmaGSM: document.getElementById("firmaGSM").value,
+                firmaSehir: document.getElementById("firmaSehir").value,
+                firmaVergiDairesi: document.getElementById("firmaVergiDairesi").value,
+                firmaVergiNo: document.getElementById("firmaVergiNo").value,
+                firmaIlce: document.getElementById("firmaIlce").value,
+                firmaAdres: document.getElementById("firmaAdres").value,
+                tema: document.getElementById("tema").value
+            };
+
+            fetch("/update-firm-info", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
+                body: JSON.stringify(formData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert("Firma bilgileri başarıyla güncellendi!");
+                } else {
+                    alert("Güncelleme sırasında bir hata oluştu: " + data.message);
+                }
+            })
+            .catch(error => {
+                console.error("Hata:", error);
+                alert("Sunucuya bağlanılamadı.");
+            });
+        });
+    </script>
+</body>
+</html>

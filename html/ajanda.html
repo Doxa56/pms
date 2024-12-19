@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ajanda</title>
+    <style>
+        body {
+            background-color: black;
+            color: #FFD700; /* Turuncu */
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        h1, h2 {
+            color: #40E0D0; /* Turkuaz */
+            text-align: center;
+        }
+        form {
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #222;
+            border-radius: 8px;
+        }
+        label {
+            display: block;
+            margin-bottom: 10px;
+            color: #FFD700; /* Turuncu */
+        }
+        textarea, input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #40E0D0;
+            border-radius: 4px;
+            background-color: #333;
+            color: #FFD700;
+        }
+        button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+            background-color: #40E0D0;
+            border: none;
+            border-radius: 4px;
+            color: black;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #FFD700;
+            color: black;
+        }
+        table {
+            width: 90%;
+            margin: 20px auto;
+            border-collapse: collapse;
+            background-color: #222;
+            border: 1px solid #40E0D0;
+        }
+        th, td {
+            padding: 10px;
+            border: 1px solid #40E0D0;
+            text-align: left;
+            color: #FFD700; /* Turuncu */
+        }
+        th {
+            background-color: #333;
+        }
+    </style>
+</head>
+<body>
+    <h1>Ajanda - Not Tutma</h1>
+
+    <!-- Not Ekleme Formu -->
+    <form id="add-note-form">
+        <label for="note_content">Not:</label>
+        <textarea id="note_content" name="note_content" required></textarea>
+        <label for="note_date">Tarih ve Saat:</label>
+        <input type="datetime-local" id="note_date" name="note_date" required>
+        <button type="submit">Not Ekle</button>
+    </form>
+
+    <hr>
+
+    <!-- Not Listesi -->
+    <h2>Notlarım</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Not</th>
+                <th>Kullanıcı Girdiği Tarih</th>
+                <th>Kaydedilen Tarih</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Notlar dinamik olarak buraya eklenecek -->
+        </tbody>
+    </table>
+
+    <script>
+        // Not Ekleme
+        document.querySelector('#add-note-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const token = localStorage.getItem('token');
+            const note_content = document.querySelector('#note_content').value;
+            const note_date = document.querySelector('#note_date').value;
+
+            const response = await fetch('/add-note', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ note_content, note_date })
+            });
+
+            const result = await response.json();
+            if (result.success) {
+                alert('Not başarıyla eklendi.');
+                window.location.reload();
+            } else {
+                alert(`Hata: ${result.message}`);
+            }
+        });
+
+        // Notları Listeleme
+        async function fetchNotes() {
+            const token = localStorage.getItem('token');
+            const response = await fetch('/get-notes', {
+                method: 'GET',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            const result = await response.json();
+            if (result.success) {
+                const tableBody = document.querySelector('table tbody');
+                tableBody.innerHTML = '';
+
+                result.data.forEach(note => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${note.event_id}</td>
+                        <td>${note.event_description}</td>
+                        <td>${new Date(note.user_input_date).toLocaleString()}</td>
+                        <td>${new Date(note.event_date).toLocaleString()}</td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+            } else {
+                alert(`Hata: ${result.message}`);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', fetchNotes);
+    </script>
+</body>
+</html>

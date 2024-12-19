@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>İş Listesi</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 20px;
+        }
+
+        h1, h2 {
+            color: #2c3e50;
+        }
+
+        form {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 300%;
+            max-width: 400px;
+        }
+
+        form label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        form input, form textarea, form select, form button {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+
+        form button {
+            background-color: #3498db;
+            color: white;
+            font-size: 16px;
+            border: none;
+            cursor: pointer;
+        }
+
+        form button:hover {
+            background-color: #2980b9;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #fff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+
+        th, td {
+            padding: 15px;
+            text-align: left;
+            font-size: 16px;
+        }
+
+        th {
+            background-color: #3498db;
+            color: white;
+            text-transform: uppercase;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        .task-list {
+            width: 65%;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                flex-direction: column;
+                align-items: center;
+                gap: 10px;
+            }
+
+            form, .task-list {
+                width: 100%;
+                max-width: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>İş Listesi</h1>
+
+    <!-- Görev Ekleme Formu -->
+    <form id="add-task-form">
+        <label for="task_name">Görev Adı:</label><br>
+        <input type="text" id="task_name" name="task_name" required><br><br>
+
+        <label for="description">Açıklama:</label><br>
+        <textarea id="description" name="description" required></textarea><br><br>
+
+        <label for="due_date">Bitiş Tarihi:</label><br>
+        <input type="date" id="due_date" name="due_date" required><br><br>
+
+        <label for="status">Durum:</label><br>
+        <select id="status" name="status" required>
+            <option value="Pending">Beklemede</option>
+            <option value="In Progress">Devam Ediyor</option>
+            <option value="Completed">Tamamlandı</option>
+        </select><br><br>
+
+        <button type="submit">Görev Ekle</button>
+    </form>
+
+    <hr>
+
+    <!-- Görev Listesi -->
+    <h2>Görevlerim</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Görev Adı</th>
+                <th>Açıklama</th>
+                <th>Bitiş Tarihi</th>
+                <th>Durum</th>
+                <th>Oluşturulma Tarihi</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Görevler dinamik olarak buraya eklenecek -->
+        </tbody>
+    </table>
+
+    <script>
+document.querySelector('#add-task-form').addEventListener('submit', async (e) => {
+    e.preventDefault(); // Formun sayfayı yenilemesini engelle
+
+    const token = localStorage.getItem('token'); // Tokeni localStorage'dan al
+    const task_name = document.querySelector('#task_name').value;
+    const description = document.querySelector('#description').value;
+    const due_date = document.querySelector('#due_date').value;
+    const status = document.querySelector('#status').value;
+
+    // Gönderilecek veri nesnesi
+    const taskData = {
+        task_name,
+        description,
+        due_date,
+        status,
+        project_id: 1, // Örnek proje ID'si (gerekirse dinamik yapılabilir)
+    };
+
+    try {
+        // Fetch isteği
+        const response = await fetch('/add-task', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`, // JWT token
+            },
+            body: JSON.stringify(taskData), // JSON formatında veri gönder
+        });
+
+        const result = await response.json(); // Sunucudan gelen yanıtı JSON formatında al
+
+        if (response.ok && result.success) {
+            alert('Görev başarıyla eklendi.'); // Başarılı mesajı
+            window.location.reload(); // Sayfayı yenile
+        } else {
+            console.error('Görev ekleme hatası:', result.message);
+            alert(`Hata: ${result.message}`); // Hata mesajını göster
+        }
+    } catch (error) {
+        console.error('Fetch isteği sırasında hata:', error);
+        alert('Görev eklenirken bir hata oluştu.'); // Hata mesajını göster
+    }
+});
+
+        // Görevleri Listeleme
+        async function fetchTasks() {
+            const token = localStorage.getItem('token');
+            const response = await fetch('/get-tasks', {
+                method: 'GET',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            const result = await response.json();
+            if (result.success) {
+                const tableBody = document.querySelector('table tbody');
+                tableBody.innerHTML = '';
+
+                result.data.forEach(task => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${task.task_id}</td>
+                        <td>${task.task_name}</td>
+                        <td>${task.description}</td>
+                        <td>${new Date(task.due_date).toLocaleDateString()}</td>
+                        <td>${task.status}</td>
+                        <td>${new Date(task.created_at).toLocaleString()}</td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+            } else {
+                alert(`Hata: ${result.message}`);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', fetchTasks);
+    </script>
+</body>
+</html>
