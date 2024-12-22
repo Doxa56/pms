@@ -533,32 +533,34 @@ app.get('/get-tasks', authenticateJWT, (req, res) => {
 });
 
 // Kullanıcı ekleme
-app.post("/add-personnel", authenticateJWT, (req, res) => {
-    const { name, phone, role, status } = req.body;
-    const eklenme_tarihi = new Date().toISOString();
-    const emailFromToken = req.user.email; // Token'dan alınan email
+app.post("/add-personnel", authenticateJWT, multer().none(), (req, res) => {
+    const { name, phone, email, role } = req.body;
+    const { email: userEmail } = req.user; // Token'dan kullanıcı e-postası alınıyor
 
-    // Email'in benzersiz olduğunu kontrol et
-    const checkEmailQuery = `SELECT * FROM personeller WHERE email = ?`;
-    db.get(checkEmailQuery, [emailFromToken], (err, existingUser) => {
-        if (err) {
-            return res.status(500).json({ success: false, message: "E-posta kontrolü yapılırken hata oluştu.", error: err.message });
+    if (!name || !email || !role) {
+        return res.status(400).json({ success: false, message: "Lütfen tüm alanları doldurun." });
+    }
+
+    // Kullanıcı ID'sini e-posta üzerinden al
+    const getUserIdQuery = `SELECT user_id FROM Users WHERE email = ?`;
+    db.get(getUserIdQuery, [userEmail], (err, user) => {
+        if (err || !user) {
+            console.error("Kullanıcı bulunamadı veya bir hata oluştu:", err?.message || "No user found");
+            return res.status(404).json({ success: false, message: "Kullanıcı bulunamadı." });
         }
 
-        if (existingUser) {
-            return res.status(400).json({ success: false, message: "Bu e-posta zaten mevcut." });
-        }
-
+        const userId = user.user_id;
         const insertPersonnelQuery = `
-            INSERT INTO personeller (name, phone, email, role, status, eklenme_tarihi)
-            VALUES (?, ?, ?, ?, ?, ?)
+            INSERT INTO personeller (name, phone, email, role, created_by)
+            VALUES (?, ?, ?, ?, ?)
         `;
-        db.run(insertPersonnelQuery, [name, phone, emailFromToken, role, status, eklenme_tarihi], function (err) {
+        db.run(insertPersonnelQuery, [name, phone, email, role, userId], function (err) {
             if (err) {
                 console.error("Personel eklenirken hata oluştu:", err.message);
                 return res.status(500).json({ success: false, message: "Personel eklenirken hata oluştu.", error: err.message });
             }
-            res.status(200).json({ success: true, message: "Personel başarıyla eklendi.", id: this.lastID });
+            res.status(201).json({ success: true, message: "Personel başarıyla eklendi.", id: this.lastID });
+            console.log("Yeni personel eklendi, personel ID'si:", this.lastID);
         });
     });
 });
@@ -594,31 +596,6 @@ app.delete("/delete-personnel/:id", authenticateJWT, (req, res) => {
         }
 
         res.status(200).json({ success: true, message: "Personel başarıyla silindi." });
-    });
-});
-
-// Kullanıcı düzenleme
-app.put("/update-personnel/:id", authenticateJWT, (req, res) => {
-    const personnelId = req.params.id;
-    const { name, phone, role, status } = req.body;
-
-    const updatePersonnelQuery = `
-        UPDATE personeller
-        SET name = ?, phone = ?, role = ?, status = ?
-        WHERE id = ?
-    `;
-
-    db.run(updatePersonnelQuery, [name, phone, role, status, personnelId], function (err) {
-        if (err) {
-            console.error("Personel güncellenirken hata oluştu:", err.message);
-            return res.status(500).json({ success: false, message: "Personel güncellenirken hata oluştu.", error: err.message });
-        }
-
-        if (this.changes === 0) {
-            return res.status(404).json({ success: false, message: "Personel bulunamadı." });
-        }
-
-        res.status(200).json({ success: true, message: "Personel başarıyla güncellendi." });
     });
 });
 

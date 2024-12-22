@@ -94,7 +94,6 @@
                         <th>GSM</th>
                         <th>E-Posta</th>
                         <th>Görev</th>
-                        <th>Durum</th>
                         <th>İşlem</th>
                     </tr>
                 </thead>
@@ -123,159 +122,109 @@
                     <label for="role">Görev</label>
                     <input type="text" id="role" name="role" required>
                 </div>
-                <div class="form-group">
-                    <label>Durum</label>
-                    <input type="checkbox" id="status" name="status" value="true">
-                </div>
                 <button type="submit">Personel Ekle</button>
             </form>
         </div>
     </div>
     <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            const personnelTableBody = document.getElementById("personnel-table-body");
-            const personnelForm = document.getElementById("personnel-form");
-            let editingPersonnelId = null;
-    
-            // Render personnel list
-            async function renderTable() {
-                try {
-                    const response = await fetch("/get-personnels");
-                    const data = await response.json();
-    
-                    if (data.success) {
-                        personnelTableBody.innerHTML = "";
-    
-                        data.data.forEach(person => {
-                            const row = document.createElement("tr");
-                            row.innerHTML = `
-                                <td>${person.id}</td>
-                                <td>${person.name}</td>
-                                <td>${person.phone}</td>
-                                <td>${person.email}</td>
-                                <td>${person.role}</td>
-                                <td>${person.status ? "Aktif" : "Pasif"}</td>
-                                <td>
-                                    <button class="update-btn" data-id="${person.id}">Düzenle</button>
-                                    <button class="delete-btn" data-id="${person.id}">Sil</button>
-                                </td>
-                            `;
-                            personnelTableBody.appendChild(row);
-                        });
-    
-                        attachEventListeners();
-                    } else {
-                        console.error(data.message);
-                    }
-                } catch (error) {
-                    console.error("Tablo güncellenirken hata oluştu:", error);
-                }
-            }
-    
-            // Attach event listeners to buttons
-            function attachEventListeners() {
-                document.querySelectorAll(".delete-btn").forEach(button => {
-                    button.addEventListener("click", async (event) => {
-                        const id = event.target.getAttribute("data-id");
-                        await deletePersonnel(id);
-                        renderTable();
-                    });
+document.addEventListener("DOMContentLoaded", () => {
+    const personnelTableBody = document.getElementById("personnel-table-body");
+    const personnelForm = document.getElementById("personnel-form");
+
+    // Render personnel list
+    async function renderTable() {
+        try {
+            const response = await fetch("/get-personnels");
+            const data = await response.json();
+
+            if (data.success) {
+                personnelTableBody.innerHTML = "";
+
+                data.data.forEach(person => {
+                    const row = document.createElement("tr");
+                    row.innerHTML = `
+                        <td>${person.id}</td>
+                        <td>${person.name}</td>
+                        <td>${person.phone}</td>
+                        <td>${person.email}</td>
+                        <td>${person.role}</td>
+                        <td>
+                            <button class="delete-btn" data-id="${person.id}">Sil</button>
+                        </td>
+                    `;
+                    personnelTableBody.appendChild(row);
                 });
-    
-                document.querySelectorAll(".update-btn").forEach(button => {
-                    button.addEventListener("click", async (event) => {
-                        const id = event.target.getAttribute("data-id");
-                        await loadPersonnelForUpdate(id);
-                    });
-                });
+
+                attachDeleteEventListeners();
+            } else {
+                console.error(data.message);
             }
-    
-            // Add new personnel or update existing one
-            personnelForm.addEventListener("submit", async (event) => {
-                event.preventDefault();
-    
-                const formData = new FormData(personnelForm);
-                const personnel = {
-                    name: formData.get("name"),
-                    phone: formData.get("phone"),
-                    role: formData.get("role"),
-                    status: formData.get("status") === "true"
-                };
-    
-                if (editingPersonnelId) {
-                    await updatePersonnel(editingPersonnelId, personnel);
-                } else {
-                    await addPersonnel(personnel);
-                }
-    
-                personnelForm.reset();
-                editingPersonnelId = null;
+        } catch (error) {
+            console.error("Tablo güncellenirken hata oluştu:", error);
+        }
+    }
+
+    // Attach event listeners to delete buttons
+    function attachDeleteEventListeners() {
+        document.querySelectorAll(".delete-btn").forEach(button => {
+            button.addEventListener("click", async (event) => {
+                const id = event.target.getAttribute("data-id");
+                await deletePersonnel(id);
                 renderTable();
             });
-    
-            // Add personnel
-            async function addPersonnel(personnel) {
-                try {
-                    const response = await fetch("/add-personnel", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify(personnel)
-                    });
-                    const data = await response.json();
-                    if (!data.success) console.error(data.message);
-                } catch (error) {
-                    console.error("Personel eklenirken hata oluştu:", error);
-                }
-            }
-    
-            // Delete personnel
-            async function deletePersonnel(id) {
-                try {
-                    const response = await fetch(`/delete-personnel/${id}`, { method: "DELETE" });
-                    const data = await response.json();
-                    if (!data.success) console.error(data.message);
-                } catch (error) {
-                    console.error("Personel silinirken hata oluştu:", error);
-                }
-            }
-    
-            // Update personnel
-            async function updatePersonnel(id, personnel) {
-                try {
-                    const response = await fetch(`/update-personnel/${id}`, {
-                        method: "PUT",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify(personnel)
-                    });
-                    const data = await response.json();
-                    if (!data.success) console.error(data.message);
-                } catch (error) {
-                    console.error("Personel güncellenirken hata oluştu:", error);
-                }
-            }
-    
-            // Load personnel for update
-            async function loadPersonnelForUpdate(id) {
-                try {
-                    const response = await fetch("/get-personnels");
-                    const data = await response.json();
-                    const person = data.data.find(p => p.id == id);
-    
-                    if (person) {
-                        document.getElementById("name").value = person.name;
-                        document.getElementById("phone").value = person.phone;
-                        document.getElementById("role").value = person.role;
-                        document.getElementById("status").checked = person.status;
-                        editingPersonnelId = id;
-                    }
-                } catch (error) {
-                    console.error("Personel yüklenirken hata oluştu:", error);
-                }
-            }
-    
-            // Initial render
-            renderTable();
         });
+    }
+
+    // Add new personnel
+    personnelForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+
+        const formData = new FormData(personnelForm);
+        const personnel = {
+            name: formData.get("name"),
+            phone: formData.get("phone"),
+            email: formData.get("email"),
+            role: formData.get("role"),
+        };
+
+        await addPersonnel(personnel);
+        personnelForm.reset();
+        renderTable();
+    });
+
+    // Add personnel
+    async function addPersonnel(personnel) {
+        try {
+            const response = await fetch("/add-personnel", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(personnel)
+            });
+            const data = await response.json();
+            if (!data.success) {
+                console.error(data.message);
+            }
+        } catch (error) {
+            console.error("Personel eklenirken hata oluştu:", error);
+        }
+    }
+
+    // Delete personnel
+    async function deletePersonnel(id) {
+        try {
+            const response = await fetch(`/delete-personnel/${id}`, { method: "DELETE" });
+            const data = await response.json();
+            if (!data.success) {
+                console.error(data.message);
+            }
+        } catch (error) {
+            console.error("Personel silinirken hata oluştu:", error);
+        }
+    }
+
+    // Initial render
+    renderTable();
+});
     </script>
 </body>
 </html>
