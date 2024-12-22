@@ -362,9 +362,18 @@ app.post('/update-support-request', authenticateJWT, (req, res) => {
         res.status(200).json({ success: true, message: "Talep başarıyla güncellendi." });
     });
 });
+// Not ekleme (add-note)
 app.post('/add-note', authenticateJWT, (req, res) => {
     const { note_content, note_date } = req.body; // Kullanıcıdan gelen alanlar
     const { email } = req.user; // Token'dan gelen email
+
+    const currentDate = new Date(); // Şu anki tarih ve saat
+    const userDate = new Date(note_date); // Kullanıcının gönderdiği tarih
+
+    // Geçmiş tarih kontrolü
+    if (userDate < currentDate) {
+        return res.status(400).json({ success: false, message: "Geçmiş bir tarihe not eklenemez." });
+    }
 
     // Kullanıcının user_id'sini almak
     const userQuery = `SELECT user_id FROM Users WHERE email = ?`;
@@ -378,8 +387,8 @@ app.post('/add-note', authenticateJWT, (req, res) => {
 
         // Calendar tablosuna not ekleme
         const insertQuery = `
-            INSERT INTO Calendar (event_description, user_date, created_by)
-            VALUES (?, ?, ?)
+            INSERT INTO Calendar (event_description, user_date, created_by, created_at)
+            VALUES (?, ?, ?, datetime('now'))
         `;
 
         db.run(insertQuery, [note_content, note_date, userId], function (err) {
@@ -392,8 +401,10 @@ app.post('/add-note', authenticateJWT, (req, res) => {
     });
 });
 
+// Notları getirme (get-notes)
 app.get('/get-notes', authenticateJWT, (req, res) => {
     const { email } = req.user; // Token'dan email bilgisi
+    const currentDate = new Date(); // Şu anki tarih
 
     // Kullanıcının user_id'sini almak
     const userQuery = `SELECT user_id FROM Users WHERE email = ?`;
@@ -413,11 +424,11 @@ app.get('/get-notes', authenticateJWT, (req, res) => {
         const selectQuery = `
             SELECT event_id, event_description, user_date AS user_input_date, created_at
             FROM Calendar
-            WHERE created_by = ?
+            WHERE created_by = ? AND user_date >= ?
             ORDER BY created_at DESC
         `;
 
-        db.all(selectQuery, [userId], (err, rows) => {
+        db.all(selectQuery, [userId, currentDate.toISOString()], (err, rows) => {
             if (err) {
                 console.error("Calendar tablosu sorgu hatası:", err.message);
                 return res.status(500).json({ success: false, message: "Veritabanı sorgu hatası." });
@@ -432,6 +443,40 @@ app.get('/get-notes', authenticateJWT, (req, res) => {
         });
     });
 });
+app.delete('/delete-note/:id', authenticateJWT, (req, res) => {
+    const { id } = req.params; // Silinecek notun ID'si
+    const { email } = req.user; // Kullanıcının kimliği (JWT'den)
+
+    // Kullanıcının `user_id`'sini almak
+    const userQuery = `SELECT user_id FROM Users WHERE email = ?`;
+    db.get(userQuery, [email], (err, user) => {
+        if (err || !user) {
+            console.error("Kullanıcı doğrulama hatası:", err?.message);
+            return res.status(404).json({ success: false, message: "Kullanıcı doğrulanamadı." });
+        }
+
+        const userId = user.user_id;
+
+        // Notu silme işlemi
+        const deleteQuery = `
+            DELETE FROM Calendar
+            WHERE event_id = ? AND created_by = ?
+        `;
+        db.run(deleteQuery, [id, userId], function (err) {
+            if (err) {
+                console.error("Veritabanı silme hatası:", err.message);
+                return res.status(500).json({ success: false, message: "Not silinirken bir hata oluştu." });
+            }
+
+            if (this.changes === 0) {
+                return res.status(404).json({ success: false, message: "Not bulunamadı veya yetkiniz yok." });
+            }
+
+            res.status(200).json({ success: true, message: "Not başarıyla silindi." });
+        });
+    });
+});
+
 //Görevleri Ekle
 app.post('/add-task', authenticateJWT, (req, res) => {
     const { task_name, description, due_date, status, project_id } = req.body;

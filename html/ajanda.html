@@ -4,11 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ajanda</title>
-    <style>
-        
-    </style>
-</head>
-<body>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <style>
         body {
@@ -65,6 +60,8 @@
             background-color: #f2f2f2;
         }
     </style>
+</head>
+<body>
     <h1>Ajanda - Not Tutma</h1>
 
     <!-- Not Ekleme Formu -->
@@ -96,69 +93,97 @@
     </table>
 
     <script>
-        // Kullanıcı tarih ve saat seçimi için geçmiş tarihleri engelleme
         document.addEventListener('DOMContentLoaded', () => {
+            // Tarih girişinde geçmiş tarihleri engelle
             const noteDateInput = document.querySelector('#note_date');
             const now = new Date();
-            const turkishTimeOffset = 3; // Türkiye 'nin UTC+3 farkı
-            const isoString = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
-            noteDateInput.min = isoString; // Minimum değer bugünün tarih ve saatine ayarlandı
-        });
+            noteDateInput.min = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
 
-        // Not Ekleme
-        document.querySelector('form').addEventListener('submit', (event) => {
-            event.preventDefault();
-            const noteDateInput = document.querySelector('#note_date').value;
-            const noteDate = new Date(noteDateInput);
-            if (isNaN(noteDate.getTime())) {
-                alert('Geçersiz tarih formatı');
-                return;
-            }
-            // Notu kaydetme işlemleri burada yapılacak
-            // Örnek olarak, notu tabloya ekleyelim
-            const tbody = document.querySelector('table tbody');
-            const newRow = tbody.insertRow();
-            newRow.insertCell().textContent = tbody.rows.length;
-            newRow.insertCell().textContent = 'Yeni Not'; // Buraya not içeriği eklenmeli
-            newRow.insertCell().textContent = noteDateInput;
-            newRow.insertCell().textContent = new Date().toLocaleString('tr-TR');
-            const deleteCell = newRow.insertCell();
-            const deleteButton = document.createElement('button');
-            deleteButton.textContent = 'Sil';
-            deleteButton.addEventListener('click', () => {
-                tbody.deleteRow(newRow.rowIndex - 1);
+            // Notları listeleme
+            fetchNotes();
+
+            // Not ekleme
+            document.querySelector('#add-note-form').addEventListener('submit', async (event) => {
+                event.preventDefault();
+
+                const noteContent = document.querySelector('#note_content').value.trim();
+                const noteDate = document.querySelector('#note_date').value;
+
+                if (!noteContent || !noteDate) {
+                    alert("Tüm alanlar doldurulmalıdır.");
+                    return;
+                }
+
+                const token = localStorage.getItem('token');
+                const response = await fetch('/add-note', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ note_content: noteContent, note_date: noteDate })
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    alert("Not başarıyla eklendi.");
+                    fetchNotes(); // Notları yeniden yükle
+                } else {
+                    alert(`Hata: ${result.message}`);
+                }
             });
-            deleteCell.appendChild(deleteButton);
         });
 
-        // Notları Listeleme
         async function fetchNotes() {
             const token = localStorage.getItem('token');
             const response = await fetch('/get-notes', {
                 method: 'GET',
-                headers: { 'Authorization': `Bearer ${token}` }
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
             });
 
             const result = await response.json();
             const tbody = document.querySelector('table tbody');
-            result.notes.forEach(note => {
-                const newRow = tbody.insertRow();
-                newRow.insertCell().textContent = note.id;
-                newRow.insertCell().textContent = note.content;
-                newRow.insertCell().textContent = note.userDate;
-                newRow.insertCell().textContent = note.savedDate;
-                const deleteCell = newRow.insertCell();
-                const deleteButton = document.createElement('button');
-                deleteButton.textContent = 'Sil';
-                deleteButton.addEventListener('click', () => {
-                    tbody.deleteRow(newRow.rowIndex - 1);
+            tbody.innerHTML = ''; // Önceki notları temizle
+
+            if (result.success && result.data.length > 0) {
+                result.data.forEach(note => {
+                    const newRow = tbody.insertRow();
+                    newRow.insertCell().textContent = note.event_id;
+                    newRow.insertCell().textContent = note.event_description;
+                    newRow.insertCell().textContent = new Date(note.user_input_date).toLocaleString('tr-TR');
+                    newRow.insertCell().textContent = new Date(note.created_at).toLocaleString('tr-TR');
+                    const deleteCell = newRow.insertCell();
+                    const deleteButton = document.createElement('button');
+                    deleteButton.textContent = 'Sil';
+                    deleteButton.addEventListener('click', async () => {
+                        await deleteNote(note.event_id);
+                        fetchNotes();
+                    });
+                    deleteCell.appendChild(deleteButton);
                 });
-                deleteCell.appendChild(deleteButton);
-            });
+            } else {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Hiç not bulunamadı.</td></tr>';
+            }
         }
 
-        // Sayfa yüklendiğinde notları listele
-        document.addEventListener('DOMContentLoaded', fetchNotes);
+        async function deleteNote(noteId) {
+            const token = localStorage.getItem('token');
+            const response = await fetch(`/delete-note/${noteId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            const result = await response.json();
+            if (result.success) {
+                alert("Not başarıyla silindi.");
+            } else {
+                alert(`Hata: ${result.message}`);
+            }
+        }
     </script>
 </body>
 </html>
