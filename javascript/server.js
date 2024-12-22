@@ -378,7 +378,7 @@ app.post('/add-note', authenticateJWT, (req, res) => {
 
         // Calendar tablosuna not ekleme
         const insertQuery = `
-            INSERT INTO Calendar (event_description, user_input_date, created_by)
+            INSERT INTO Calendar (event_description, user_date, created_by)
             VALUES (?, ?, ?)
         `;
 
@@ -391,22 +391,27 @@ app.post('/add-note', authenticateJWT, (req, res) => {
         });
     });
 });
+
 app.get('/get-notes', authenticateJWT, (req, res) => {
     const { email } = req.user; // Token'dan email bilgisi
 
     // Kullanıcının user_id'sini almak
     const userQuery = `SELECT user_id FROM Users WHERE email = ?`;
     db.get(userQuery, [email], (err, user) => {
-        if (err || !user) {
-            console.error("Kullanıcı doğrulama hatası:", err?.message);
-            return res.status(404).json({ success: false, message: "Kullanıcı doğrulanamadı." });
+        if (err) {
+            console.error("Kullanıcı sorgusu hatası:", err.message);
+            return res.status(500).json({ success: false, message: "Kullanıcı bilgisi alınırken bir hata oluştu." });
+        }
+        if (!user) {
+            console.error("Kullanıcı bulunamadı:", email);
+            return res.status(404).json({ success: false, message: "Kullanıcı bulunamadı." });
         }
 
         const userId = user.user_id;
 
         // Calendar tablosundan notları listeleme
         const selectQuery = `
-            SELECT event_id, event_description, user_input_date, created_at
+            SELECT event_id, event_description, user_date AS user_input_date, created_at
             FROM Calendar
             WHERE created_by = ?
             ORDER BY created_at DESC
@@ -414,9 +419,15 @@ app.get('/get-notes', authenticateJWT, (req, res) => {
 
         db.all(selectQuery, [userId], (err, rows) => {
             if (err) {
-                console.error("Veritabanı sorgu hatası:", err.message);
-                return res.status(500).json({ success: false, message: "Notlar alınırken bir hata oluştu." });
+                console.error("Calendar tablosu sorgu hatası:", err.message);
+                return res.status(500).json({ success: false, message: "Veritabanı sorgu hatası." });
             }
+
+            if (rows.length === 0) {
+                return res.status(200).json({ success: true, data: [], message: "Hiç not bulunamadı." });
+            }
+
+            console.log("Notlar başarıyla alındı:", rows);
             res.status(200).json({ success: true, data: rows });
         });
     });

@@ -101,6 +101,14 @@
     </table>
 
     <script>
+        // Kullanıcı tarih ve saat seçimi için geçmiş tarihleri engelleme
+        document.addEventListener('DOMContentLoaded', () => {
+            const noteDateInput = document.querySelector('#note_date');
+            const now = new Date();
+            const isoString = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+            noteDateInput.min = isoString; // Minimum değer bugünün tarih ve saatine ayarlandı
+        });
+
         // Not Ekleme
         document.querySelector('#add-note-form').addEventListener('submit', async (e) => {
             e.preventDefault();

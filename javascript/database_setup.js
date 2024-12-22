@@ -66,27 +66,27 @@ db.serialize(() => {
         else console.log("Tasks tablosu oluşturuldu.");
     });
 
-    db.run(`
-        CREATE TABLE IF NOT EXISTS Calendar (
-            event_id INTEGER PRIMARY KEY AUTOINCREMENT,   -- Otomatik artan ID
-            event_name VARCHAR(100),                     -- Etkinlik adı
-            event_description TEXT,                     -- Etkinlik açıklaması
-            event_date TIMESTAMP,                       -- Sistem tarafından kaydedilen tarih
-            user_date DATE,                  -- Kullanıcının girdiği tarih
-            created_by INTEGER,                         -- Oluşturan kullanıcının ID'si
-            project_id INTEGER,                         -- Bağlı olduğu proje ID'si
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- Kayıt oluşturulma tarihi
-            FOREIGN KEY (created_by) REFERENCES Users(user_id) ON DELETE CASCADE,
-            FOREIGN KEY (project_id) REFERENCES Projects(project_id) ON DELETE SET NULL
-        )
-    `, (err) => {
-        if (err) {
-            console.error("Calendar tablosu oluşturulamadı:", err.message);
-        } else {
-            console.log("Calendar tablosu başarıyla oluşturuldu.");
-        }
-    });
-     
+ db.run(
+    `
+    CREATE TABLE IF NOT EXISTS Calendar (
+    event_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    event_name VARCHAR(100),
+    event_description TEXT,
+    event_date TIMESTAMP,
+    created_by INTEGER,
+    project_id INTEGER,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    user_date DATE, -- Bu sütunu ekledik
+    FOREIGN KEY (created_by) REFERENCES Users(user_id) ON DELETE CASCADE,
+    FOREIGN KEY (project_id) REFERENCES Projects(project_id) ON DELETE SET NULL
+    )
+`, (err) => {
+    if (err) {
+        console.error("Calendar tablosu oluşturulamadı:", err.message);
+    } else {
+        console.log("Calendar tablosu başarıyla oluşturuldu.");
+    }
+});
 
     // SupportRequests tablosunu oluştur
 db.run(`
