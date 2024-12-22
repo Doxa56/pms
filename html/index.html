@@ -6,14 +6,11 @@
     <link rel="stylesheet" href="/index.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <title>Anasayfa</title>
- 
 </head>
 <body>
    <!-- Navbar -->
    <nav class="navbar">
        <div class="navbar-left">
-           <a href="#" class="brand">Pro</a>
-          
        </div>
        <div class="navbar-right">
            <i class="fas fa-bell notification-icon"></i>
@@ -89,86 +86,116 @@
    </div>
 
    <!-- İçerik Bölümü -->
-  
-      
 <div class="content">
-    <div class="column" id="jobList">
-        <h2>İş Listesi</h2>
-        <div class="filters">
-            <label for="jobType">İş Türü:</label>
-            <select id="jobType">
-                <option value="fulltime">Tam Zamanlı</option>
-                <option value="parttime">Yarı Zamanlı</option>
-                <option value="internship">Staj</option>
-            </select>
-            <label for="location">Konum:</label>
-            <select id="location">
-                <option value="istanbul">İstanbul</option>
-                <option value="ankara">Ankara</option>
-                <option value="izmir">İzmir</option>
-            </select>
-            <label for="experience">Deneyim Seviyesi:</label>
-            <select id="experience">
-                <option value="junior">Yeni Başlayan</option>
-                <option value="mid">Orta Seviye</option>
-                <option value="senior">Kıdemli</option>
-            </select>
-        </div>
-        <ul class="job-list">
-            <li>
-                <h3>Yazılım Geliştirici</h3>
-                <p>İstanbul, Tam Zamanlı, 3+ Yıl Deneyim</p>
-                <button>Başvur</button>
-                <button>Kaydet</button>
-            </li>
-            <li>
-                <h3>Proje Yöneticisi</h3>
-                <p>Ankara, Tam Zamanlı, 5+ Yıl Deneyim</p>
-                <button>Başvur</button>
-                <button>Kaydet</button>
-            </li>
-        </ul>
-    </div>
-    <div class="column" id="agenda">
-        <h2>Ajanda</h2>
-        <div class="calendar">
-            <!-- Calendar implementation -->
-        </div>
-        <div class="agenda-items">
-            <h3>Toplantı: Proje Durumu</h3>
-            <p>12 Ekim 2023, 10:00 AM</p>
-            <textarea placeholder="Notlar..."></textarea>
-            <button>Düzenle</button>
-            <button>Sil</button>
+    <div class="column">
+        <h2>Görevlerim</h2>
+        <div class="table-container">
+            <table class="task-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Görev Adı</th>
+                        <th>Açıklama</th>
+                        <th>Bitiş Tarihi</th>
+                        <th>Durum</th>
+                        <th>Oluşturulma Tarihi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Görevler dinamik olarak buraya eklenecek -->
+                </tbody>
+            </table>
         </div>
     </div>
-</div>
-<div class="content" style="padding-top: 10px;">
+
+    <div class="column">
+        <h2>Ajanda Notları</h2>
+        <div class="table-container">
+            <table class="note-table task-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Not</th>
+                        <th>Kullanıcı Girdiği Tarih</th>
+                        <th>Kaydedilen Tarih</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Notlar dinamik olarak buraya eklenecek -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // Notları Listeleme
+        async function fetchNotes() {
+            const token = localStorage.getItem('token');
+            const response = await fetch('/get-notes', {
+                method: 'GET',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            const result = await response.json();
+            if (result.success) {
+                const tableBody = document.querySelector('.note-table tbody');
+                tableBody.innerHTML = '';
+
+                result.data.forEach(note => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${note.event_id}</td>
+                        <td>${note.event_description}</td>
+                        <td>${new Date(note.user_input_date).toLocaleString()}</td>
+                        <td>${new Date(note.event_date).toLocaleString()}</td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+            } else {
+                alert(`Hata: ${result.message}`);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', fetchNotes);
+    </script>
     <div class="column" id="projects">
         <h2>Mevcut Projeler</h2>
-        <ul class="project-list">
-            <li>
-                <h3>Proje A</h3>
-                <p>Durum: Devam Ediyor</p>
-                <p>Son Tarih: 30 Kasım 2023</p>
-                <p>Takım Üyeleri: Ali, Ayşe, Mehmet</p>
-                <button>Güncelle</button>
-            </li>
-            <li>
-                <h3>Proje B</h3>
-                <p>Durum: Tamamlandı</p>
-                <p>Son Tarih: 15 Ekim 2023</p>
-                <p>Takım Üyeleri: Fatma, Ahmet, Zeynep</p>
-                <button>Güncelle</button>
-            </li>
-        </ul>
+        <div class="table-container">
+            <table class="project-table task-table">
+                <thead>
+                    <tr>
+                        <th>Proje Adı</th>
+                        <th>Durum</th>
+                        <th>Son Tarih</th>
+                        <th>Takım Üyeleri</th>
+                        <th>İşlem</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Proje A</td>
+                        <td>Devam Ediyor</td>
+                        <td>30 Kasım 2023</td>
+                        <td>Ali, Ayşe, Mehmet</td>
+                        <td><button>Güncelle</button></td>
+                    </tr>
+                    <tr>
+                        <td>Proje B</td>
+                        <td>Tamamlandı</td>
+                        <td>15 Ekim 2023</td>
+                        <td>Fatma, Ahmet, Zeynep</td>
+                        <td><button>Güncelle</button></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 
 <style>
     .content {
         display: flex;
-        flex-wrap: wrap;
+        flex-direction: column;
         gap: 20px;
     }
     .column {
@@ -179,19 +206,22 @@
         border-radius: 8px;
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
-    .filters label, .filters select {
-        display: block;
-        margin-bottom: 10px;
+    .task-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+        font-size: 14px;
     }
-    .job-list, .project-list {
-        list-style: none;
-        padding: 0;
+    .task-table th, .task-table td {
+        padding: 8px;
+        border: 1px solid #ddd;
+        text-align: left;
     }
-    .job-list li, .project-list li {
-        margin-bottom: 20px;
+    .task-table th {
+        background-color: #f1f1f1;
     }
-    .job-list h3, .project-list h3 {
-        margin: 0 0 10px;
+    .table-container {
+        overflow-x: auto;
     }
     .calendar {
         height: 300px;
@@ -208,10 +238,54 @@
         height: 100px;
         margin-bottom: 10px;
     }
+    .project-list {
+        list-style: none;
+        padding: 0;
+    }
+    .project-list li {
+        margin-bottom: 20px;
+    }
+    .project-list h3 {
+        margin: 0 0 10px;
+    }
     button {
         margin-right: 10px;
     }
 </style>
+
+<script>
+    // Görevleri Listeleme
+    async function fetchTasks() {
+        const token = localStorage.getItem('token');
+        const response = await fetch('/get-tasks', {
+            method: 'GET',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        const result = await response.json();
+        if (result.success) {
+            const tableBody = document.querySelector('table tbody');
+            tableBody.innerHTML = '';
+
+            result.data.forEach(task => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${task.task_id}</td>
+                    <td>${task.task_name}</td>
+                    <td>${task.description}</td>
+                    <td>${new Date(task.due_date).toLocaleDateString()}</td>
+                    <td>${task.status}</td>
+                    <td>${new Date(task.created_at).toLocaleString()}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+        } else {
+            alert(`Hata: ${result.message}`);
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', fetchTasks);
+</script>
    <script src="/index.js"></script>
 </body>
 </html>
