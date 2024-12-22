@@ -131,38 +131,50 @@ document.addEventListener("DOMContentLoaded", () => {
     const personnelTableBody = document.getElementById("personnel-table-body");
     const personnelForm = document.getElementById("personnel-form");
 
-    // Render personnel list
     async function renderTable() {
-        try {
-            const response = await fetch("/get-personnels");
-            const data = await response.json();
-
-            if (data.success) {
-                personnelTableBody.innerHTML = "";
-
-                data.data.forEach(person => {
-                    const row = document.createElement("tr");
-                    row.innerHTML = `
-                        <td>${person.id}</td>
-                        <td>${person.name}</td>
-                        <td>${person.phone}</td>
-                        <td>${person.email}</td>
-                        <td>${person.role}</td>
-                        <td>
-                            <button class="delete-btn" data-id="${person.id}">Sil</button>
-                        </td>
-                    `;
-                    personnelTableBody.appendChild(row);
-                });
-
-                attachDeleteEventListeners();
-            } else {
-                console.error(data.message);
+    try {
+        const response = await fetch("/get-personnels", {
+            headers: {
+                "Authorization": `Bearer ${localStorage.getItem("token")}`
             }
-        } catch (error) {
-            console.error("Tablo güncellenirken hata oluştu:", error);
+        });
+
+        if (!response.ok) {
+            console.error(`Hata oluştu: ${response.status} - ${response.statusText}`);
+            if (response.status === 401) {
+                alert("Yetkilendirme hatası! Lütfen giriş yapın.");
+            }
+            return;
         }
+
+        const data = await response.json();
+
+        if (data.success) {
+            personnelTableBody.innerHTML = "";
+
+            data.data.forEach(person => {
+                const row = document.createElement("tr");
+                row.innerHTML = `
+                    <td>${person.id}</td>
+                    <td>${person.name}</td>
+                    <td>${person.phone}</td>
+                    <td>${person.email}</td>
+                    <td>${person.role}</td>
+                    <td>
+                        <button class="delete-btn" data-id="${person.id}">Sil</button>
+                    </td>
+                `;
+                personnelTableBody.appendChild(row);
+            });
+
+            attachDeleteEventListeners();
+        } else {
+            console.error(data.message);
+        }
+    } catch (error) {
+        console.error("Tablo güncellenirken hata oluştu:", error);
     }
+}
 
     // Attach event listeners to delete buttons
     function attachDeleteEventListeners() {
@@ -194,33 +206,61 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Add personnel
     async function addPersonnel(personnel) {
-        try {
-            const response = await fetch("/add-personnel", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(personnel)
-            });
-            const data = await response.json();
-            if (!data.success) {
-                console.error(data.message);
-            }
-        } catch (error) {
-            console.error("Personel eklenirken hata oluştu:", error);
-        }
-    }
+    try {
+        const token = localStorage.getItem("token");
+        const response = await fetch("/add-personnel", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+            },
+            body: JSON.stringify(personnel)
+        });
 
-    // Delete personnel
-    async function deletePersonnel(id) {
-        try {
-            const response = await fetch(`/delete-personnel/${id}`, { method: "DELETE" });
-            const data = await response.json();
-            if (!data.success) {
-                console.error(data.message);
-            }
-        } catch (error) {
-            console.error("Personel silinirken hata oluştu:", error);
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error(`Hata oluştu: ${response.status} - ${errorText}`);
+            return;
         }
+
+        const data = await response.json();
+        if (!data.success) {
+            console.error(data.message);
+        }
+    } catch (error) {
+        console.error("Personel eklenirken hata oluştu:", error);
     }
+}
+// Token'ı kontrol et ve ekrana yazdır
+const token = localStorage.getItem("token");
+if (!token) {
+    console.error("Token bulunamadı! Giriş yapmanız gerekebilir.");
+    return;
+}
+
+// Token ile API isteği gönder
+async function deletePersonnel(id) {
+    try {
+        const response = await fetch(`/delete-personnel/${id}`, {
+            method: "DELETE",
+            headers: {
+                "Authorization": `Bearer ${token}`,
+                "Content-Type": "application/json"
+            }
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error(`Hata oluştu: ${response.status} - ${errorText}`);
+            return;
+        }
+
+        console.log("Personel başarıyla silindi.");
+    } catch (error) {
+        console.error("Personel silinirken hata oluştu:", error);
+    }
+}
+
 
     // Initial render
     renderTable();
