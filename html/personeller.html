@@ -120,104 +120,201 @@
 
         <div class="personnel-form">
             <h3>Personel Ekle</h3>
-            <form>
-                <div class="form-group">
-                    <label>Personel Resim</label>
-                    <input type="file">
-                </div>
-                <div class="form-group">
-                    <label>Personel Ad</label>
-                    <input type="text" name="name" placeholder="Personel Ad" required>
-                </div>
-                <div class="form-group">
-                    <label>Personel Telefon</label>
-                    <input type="text" name="phone" placeholder="(532) 123 45 67">
-                </div>
-                <div class="form-group">
-                    <label>Personel E-Posta</label>
-                    <input type="email" name="email" placeholder="example@mail.com">
-                </div>
-                <div class="form-group">
-                    <label>Görev</label>
-                    <input type="text" name="role" placeholder="Görev">
-                </div>
-                <button type="submit">Kaydet</button>
-            </form>
+                <form id="personnel-form">
+                    <div class="form-group">
+                        <label for="name">İsim</label>
+                        <input type="text" id="name" name="name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="phone">Telefon</label>
+                        <input type="text" id="phone" name="phone" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="email">E-posta</label>
+                        <input type="email" id="email" name="email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="role">Görev</label>
+                        <input type="text" id="role" name="role" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Durum</label>
+                        <input type="checkbox" name="status" value="true">
+                    </div>
+                    <button type="submit">Personel Ekle</button>
+                </form>
         </div>
     </div>
-    <script>// DOM öğelerini seçelim
+    <script>
+       document.addEventListener("DOMContentLoaded", () => {
+        // DOM öğelerini seçelim
         const personnelTableBody = document.querySelector("tbody");
-        const personnelForm = document.querySelector("form");
-        
-        // Örnek bir personel listesi (başlangıç verileri)
-        let personnelList = [
-            { id: 1113, name: "Personel 1", phone: "***", email: "hasangokava34@gmail.com", role: "Demo Kullanıcı", status: true },
-            { id: 1114, name: "Personel 2", phone: "********", email: "personel@proskop.com", role: "Demo Kullanıcı", status: true },
-            { id: 1115, name: "Personel 3", phone: "(***) ***", email: "personel2@proskop.com", role: "Demo Kullanıcı", status: true },
-        ];
-        
-        // Personel listesini tabloya yazdıran fonksiyon
-        function renderTable() {
+        const personnelForm = document.getElementById("personnel-form");
+
+        // Eğer form bulunamıyorsa, uyarı ver ve kodun geri kalanını çalıştırma
+        if (!personnelForm || !personnelTableBody) {
+            console.error("Form veya tablo öğesi bulunamadı. Lütfen HTML yapısını kontrol edin.");
+            return;
+        }
+
+        // API URL'leri
+        const API_BASE_URL = "http://localhost:3000";
+        const ADD_PERSONNEL_URL = `${API_BASE_URL}/add-personnel`;
+        const GET_PERSONNEL_URL = `${API_BASE_URL}/get-personnel`;
+        const DELETE_PERSONNEL_URL = `${API_BASE_URL}/delete-personnel`;
+        const UPDATE_PERSONNEL_URL = `${API_BASE_URL}/update-personnel`;
+
+        // JWT token (örnek olarak hardcoded, normalde giriş işlemi sonrası alınır)
+        const JWT_TOKEN = "<JWT_TOKEN>"; // Gerçek token ile değiştirin
+
+        // Tabloyu doldur
+        async function fetchPersonnelList() {
+            try {
+                const response = await fetch(GET_PERSONNEL_URL, {
+                    headers: {
+                        'Authorization': `Bearer ${JWT_TOKEN}`
+                    }
+                });
+                const result = await response.json();
+
+                if (result.success) {
+                    renderTable(result.data);
+                } else {
+                    alert(result.message);
+                }
+            } catch (error) {
+                console.error("Personel listesi alınamadı:", error);
+            }
+        }
+
+        // Tabloyu ekrana yazdıran fonksiyon
+        function renderTable(personnelList) {
             // Tabloyu temizle
             personnelTableBody.innerHTML = "";
-        
+
             // Listeyi tabloya ekle
             personnelList.forEach(person => {
                 const row = document.createElement("tr");
-        
+
                 row.innerHTML = `
                     <td>${person.id}</td>
                     <td>${person.name}</td>
                     <td>${person.phone}</td>
                     <td>${person.email}</td>
                     <td>${person.role}</td>
-                    <td><input type="checkbox" ${person.status ? "checked" : ""}></td>
+                    <td>${person.status ? "Aktif" : "Pasif"}</td>
+                    <td>${new Date(person.created_at).toLocaleString()}</td>
                     <td>
+                        <button class="update-btn" data-id="${person.id}">Düzenle</button>
                         <button class="delete-btn" data-id="${person.id}">Sil</button>
                     </td>
                 `;
-        
+
                 personnelTableBody.appendChild(row);
             });
-        
+
             // Silme butonlarına olay dinleyici ekle
             document.querySelectorAll(".delete-btn").forEach(button => {
                 button.addEventListener("click", deletePersonnel);
             });
+
+            // Güncelleme butonlarına olay dinleyici ekle
+            document.querySelectorAll(".update-btn").forEach(button => {
+                button.addEventListener("click", updatePersonnel);
+            });
         }
-        
+
         // Personel silme işlemi
-        function deletePersonnel(event) {
-            const idToDelete = parseInt(event.target.getAttribute("data-id"));
-            personnelList = personnelList.filter(person => person.id !== idToDelete);
-            renderTable();
+        async function deletePersonnel(event) {
+            const idToDelete = event.target.getAttribute("data-id");
+
+            if (confirm("Bu personeli silmek istediğinize emin misiniz?")) {
+                try {
+                    const response = await fetch(`${DELETE_PERSONNEL_URL}/${idToDelete}`, {
+                        method: "DELETE",
+                        headers: {
+                            'Authorization': `Bearer ${JWT_TOKEN}`
+                        }
+                    });
+                    const result = await response.json();
+
+                    if (result.success) {
+                        alert("Personel başarıyla silindi.");
+                        fetchPersonnelList(); // Listeyi güncelle
+                    } else {
+                        alert(result.message);
+                    }
+                } catch (error) {
+                    console.error("Personel silinemedi:", error);
+                }
+            }
         }
-        
-        // Personel ekleme işlemi
-        personnelForm.addEventListener("submit", event => {
-            event.preventDefault();
-        
-            // Form verilerini al
-            const formData = new FormData(personnelForm);
-            const newPersonnel = {
-                id: personnelList.length ? Math.max(...personnelList.map(p => p.id)) + 1 : 1111,
-                name: formData.get("name"),
-                phone: formData.get("phone") || "Belirtilmedi",
-                email: formData.get("email") || "Belirtilmedi",
-                role: formData.get("role") || "Personel",
-                status: true,
-            };
-        
-            // Listeye ekle ve tabloyu güncelle
-            personnelList.push(newPersonnel);
-            renderTable();
-        
-            // Formu sıfırla
-            personnelForm.reset();
-        });
-        
-        // Sayfa yüklendiğinde tabloyu render et
-        document.addEventListener("DOMContentLoaded", renderTable);
-        </script>
+
+        // Personel güncelleme işlemi
+        async function updatePersonnel(event) {
+            const idToUpdate = event.target.getAttribute("data-id");
+
+            try {
+                const response = await fetch(`${GET_PERSONNEL_URL}/${idToUpdate}`, {
+                    headers: {
+                        'Authorization': `Bearer ${JWT_TOKEN}`
+                    }
+                });
+                const result = await response.json();
+
+                if (result.success) {
+                    const person = result.data;
+                    document.getElementById("name").value = person.name;
+                    document.getElementById("phone").value = person.phone;
+                    document.getElementById("email").value = person.email;
+                    document.getElementById("role").value = person.role;
+                    document.getElementById("status").value = person.status;
+
+                    personnelForm.addEventListener("submit", async (event) => {
+                        event.preventDefault();
+
+                        const formData = new FormData(personnelForm);
+                        const updatedPersonnelData = {
+                            name: formData.get("name"),
+                            phone: formData.get("phone"),
+                            email: formData.get("email"),
+                            role: formData.get("role"),
+                            status: formData.get("status") === "true"
+                        };
+
+                        try {
+                            const response = await fetch(`${UPDATE_PERSONNEL_URL}/${idToUpdate}`, {
+                                method: "PUT",
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'Authorization': `Bearer ${JWT_TOKEN}`
+                                },
+                                body: JSON.stringify(updatedPersonnelData)
+                            });
+
+                            const result = await response.json();
+
+                            if (result.success) {
+                                alert("Personel başarıyla güncellendi.");
+                                fetchPersonnelList(); // Listeyi güncelle
+                            } else {
+                                alert(result.message);
+                            }
+                        } catch (error) {
+                            console.error("Personel güncellenemedi:", error);
+                        }
+                    });
+                } else {
+                    alert(result.message);
+                }
+            } catch (error) {
+                console.error("Personel bilgisi alınamadı:", error);
+            }
+        }
+
+        // Sayfa yüklendiğinde personel listesini getir
+        fetchPersonnelList();
+    });
+    </script>
 </body>
 </html>

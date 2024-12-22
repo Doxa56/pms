@@ -432,7 +432,7 @@ app.get('/get-notes', authenticateJWT, (req, res) => {
         });
     });
 });
-
+//Görevleri Ekle
 app.post('/add-task', authenticateJWT, (req, res) => {
     const { task_name, description, due_date, status, project_id } = req.body;
     const { email } = req.user; // Token'dan email bilgisi
@@ -487,6 +487,104 @@ app.get('/get-tasks', authenticateJWT, (req, res) => {
     });
 });
 
+// Kullanıcı ekleme
+app.post("/add-personnel", (req, res) => {
+    const token = req.headers.authorization?.split(" ")[1];
+    if (!token) {
+        return res.status(401).json({ success: false, message: "Yetkisiz erişim." });
+    }
+
+    jwt.verify(token, SECRET_KEY, (err, user) => {
+        if (err) {
+            return res.status(403).json({ success: false, message: "Token geçersiz." });
+        }
+
+        const { name, phone, email, role, status } = req.body;
+        const created_at = new Date().toISOString();
+
+        const insertPersonnelQuery = `
+            INSERT INTO personnel (name, phone, email, role, status, created_at)
+            VALUES (?, ?, ?, ?, ?, ?)
+        `;
+
+        db.run(insertPersonnelQuery, [name, phone, email, role, status, created_at], function (err) {
+            if (err) {
+                console.error("Personel eklenirken hata oluştu:", err.message);
+                return res.status(500).json({ success: false, message: "Personel eklenirken hata oluştu.", error: err.message });
+            }
+            res.status(200).json({ success: true, message: "Personel başarıyla eklendi.", id: this.lastID });
+        });
+    });
+});
+
+// Kullanıcı silme
+app.delete("/delete-personnel/:id", (req, res) => {
+    const token = req.headers.authorization?.split(" ")[1];
+    if (!token) {
+        return res.status(401).json({ success: false, message: "Yetkisiz erişim." });
+    }
+
+    jwt.verify(token, SECRET_KEY, (err, user) => {
+        if (err) {
+            return res.status(403).json({ success: false, message: "Token geçersiz." });
+        }
+
+        const personnelId = req.params.id;
+
+        const deletePersonnelQuery = `
+            DELETE FROM personnel WHERE id = ?
+        `;
+
+        db.run(deletePersonnelQuery, [personnelId], function (err) {
+            if (err) {
+                console.error("Personel silinirken hata oluştu:", err.message);
+                return res.status(500).json({ success: false, message: "Personel silinirken hata oluştu.", error: err.message });
+            }
+
+            if (this.changes === 0) {
+                return res.status(404).json({ success: false, message: "Personel bulunamadı." });
+            }
+
+            res.status(200).json({ success: true, message: "Personel başarıyla silindi." });
+        });
+    });
+});
+
+// Kullanıcı düzenleme
+app.put("/update-personnel/:id", (req, res) => {
+    const token = req.headers.authorization?.split(" ")[1];
+    if (!token) {
+        return res.status(401).json({ success: false, message: "Yetkisiz erişim." });
+    }
+
+    jwt.verify(token, SECRET_KEY, (err, user) => {
+        if (err) {
+            return res.status(403).json({ success: false, message: "Token geçersiz." });
+        }
+
+        const personnelId = req.params.id;
+        const { name, phone, email, role, status } = req.body;
+
+        const updatePersonnelQuery = `
+            UPDATE personnel
+            SET name = ?, phone = ?, email = ?, role = ?, status = ?
+            WHERE id = ?
+        `;
+
+        db.run(updatePersonnelQuery, [name, phone, email, role, status, personnelId], function (err) {
+            if (err) {
+                console.error("Personel güncellenirken hata oluştu:", err.message);
+                return res.status(500).json({ success: false, message: "Personel güncellenirken hata oluştu.", error: err.message });
+            }
+
+            if (this.changes === 0) {
+                return res.status(404).json({ success: false, message: "Personel bulunamadı." });
+            }
+
+            res.status(200).json({ success: true, message: "Personel başarıyla güncellendi." });
+        });
+    });
+});
 
 // Start server
 app.listen(port, () => {

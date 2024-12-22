@@ -129,6 +129,25 @@ db.run(`
     }
 });
 
+db.run(`
+    CREATE TABLE IF NOT EXISTS personeller (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        phone TEXT,
+        email TEXT NOT NULL,
+        role TEXT NOT NULL,
+        status BOOLEAN DEFAULT 1,
+        eklenme_tarihi TEXT DEFAULT CURRENT_TIMESTAMP
+    );
+`, (err) => {
+    if (err) {
+        console.error("Personeller tablosu oluşturulamadı:", err.message);
+    } else {
+        console.log("Personeller tablosu başarıyla oluşturuldu.");
+    }
+});
+
+
 
     // Diğer tabloları eklemek için db.run fonksiyonlarını benzer şekilde ekleyin...
 });
