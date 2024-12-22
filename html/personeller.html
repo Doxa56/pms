@@ -4,78 +4,79 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Personel Yönetim Sistemi</title>
-    <style>body {
-        font-family: Arial, sans-serif;
-        margin: 0;
-        padding: 0;
-        background-color: #f4f4f9;
-    }
-    
-    .container {
-        display: flex;
-        padding: 20px;
-    }
-    
-    .personnel-list, .personnel-form {
-        background: #fff;
-        padding: 20px;
-        margin: 10px;
-        border-radius: 10px;
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    }
-    
-    .personnel-list {
-        flex: 3;
-    }
-    
-    .personnel-form {
-        flex: 2;
-    }
-    
-    table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 10px;
-    }
-    
-    table th, table td {
-        padding: 10px;
-        border: 1px solid #ddd;
-        text-align: center;
-    }
-    
-    table th {
-        background-color: #f0f0f0;
-    }
-    
-    .form-group {
-        margin-bottom: 15px;
-    }
-    
-    input, select, button {
-        width: 100%;
-        padding: 8px;
-        margin-top: 5px;
-        border: 1px solid #ddd;
-        border-radius: 5px;
-    }
-    
-    button {
-        background-color: #007bff;
-        color: #fff;
-        border: none;
-        cursor: pointer;
-    }
-    
-    button:hover {
-        background-color: #0056b3;
-    }
-    
-    .pagination {
-        margin-top: 10px;
-        text-align: center;
-        font-size: 14px;
-    }
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+        }
+
+        .container {
+            display: flex;
+            padding: 20px;
+        }
+
+        .personnel-list, .personnel-form {
+            background: #fff;
+            padding: 20px;
+            margin: 10px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .personnel-list {
+            flex: 3;
+        }
+
+        .personnel-form {
+            flex: 2;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        table th, table td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: center;
+        }
+
+        table th {
+            background-color: #f0f0f0;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        input, select, button {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        button {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .pagination {
+            margin-top: 10px;
+            text-align: center;
+            font-size: 14px;
+        }
     </style>
 </head>
 <body>
@@ -83,7 +84,7 @@
         <div class="personnel-list">
             <h3>Personel Listesi</h3>
             <div class="search-bar">
-                <input type="text" placeholder="Ara...">
+                <input type="text" id="search-input" placeholder="Ara...">
             </div>
             <table>
                 <thead>
@@ -97,224 +98,184 @@
                         <th>İşlem</th>
                     </tr>
                 </thead>
-                <tbody>
-                    <tr>
-                        <td>1113</td>
-                        <td>Personel 1</td>
-                        <td>***</td>
-                        <td>hasangokava34@gmail.com</td>
-                        <td>Demo Kullanıcı</td>
-                        <td><input type="checkbox" checked></td>
-                        <td>
-                            <button>Düzenle</button>
-                            <button>Sil</button>
-                        </td>
-                    </tr>
-                    <!-- Diğer satırlar buraya -->
+                <tbody id="personnel-table-body">
+                    <!-- Personel satırları buraya eklenecek -->
                 </tbody>
             </table>
-            <div class="pagination">
-                <p>3 kayıttan 1-3 arası gösteriliyor</p>
-            </div>
         </div>
 
         <div class="personnel-form">
             <h3>Personel Ekle</h3>
-                <form id="personnel-form">
-                    <div class="form-group">
-                        <label for="name">İsim</label>
-                        <input type="text" id="name" name="name" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="phone">Telefon</label>
-                        <input type="text" id="phone" name="phone" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="email">E-posta</label>
-                        <input type="email" id="email" name="email" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="role">Görev</label>
-                        <input type="text" id="role" name="role" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Durum</label>
-                        <input type="checkbox" name="status" value="true">
-                    </div>
-                    <button type="submit">Personel Ekle</button>
-                </form>
+            <form id="personnel-form">
+                <div class="form-group">
+                    <label for="name">İsim</label>
+                    <input type="text" id="name" name="name" required>
+                </div>
+                <div class="form-group">
+                    <label for="phone">Telefon</label>
+                    <input type="text" id="phone" name="phone" required>
+                </div>
+                <div class="form-group">
+                    <label for="email">E-posta</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="role">Görev</label>
+                    <input type="text" id="role" name="role" required>
+                </div>
+                <div class="form-group">
+                    <label>Durum</label>
+                    <input type="checkbox" id="status" name="status" value="true">
+                </div>
+                <button type="submit">Personel Ekle</button>
+            </form>
         </div>
     </div>
     <script>
-       document.addEventListener("DOMContentLoaded", () => {
-        // DOM öğelerini seçelim
-        const personnelTableBody = document.querySelector("tbody");
-        const personnelForm = document.getElementById("personnel-form");
-
-        // Eğer form bulunamıyorsa, uyarı ver ve kodun geri kalanını çalıştırma
-        if (!personnelForm || !personnelTableBody) {
-            console.error("Form veya tablo öğesi bulunamadı. Lütfen HTML yapısını kontrol edin.");
-            return;
-        }
-
-        // API URL'leri
-        const API_BASE_URL = "http://localhost:3000";
-        const ADD_PERSONNEL_URL = `${API_BASE_URL}/add-personnel`;
-        const GET_PERSONNEL_URL = `${API_BASE_URL}/get-personnel`;
-        const DELETE_PERSONNEL_URL = `${API_BASE_URL}/delete-personnel`;
-        const UPDATE_PERSONNEL_URL = `${API_BASE_URL}/update-personnel`;
-
-        // JWT token (örnek olarak hardcoded, normalde giriş işlemi sonrası alınır)
-        const JWT_TOKEN = "<JWT_TOKEN>"; // Gerçek token ile değiştirin
-
-        // Tabloyu doldur
-        async function fetchPersonnelList() {
-            try {
-                const response = await fetch(GET_PERSONNEL_URL, {
-                    headers: {
-                        'Authorization': `Bearer ${JWT_TOKEN}`
-                    }
-                });
-                const result = await response.json();
-
-                if (result.success) {
-                    renderTable(result.data);
-                } else {
-                    alert(result.message);
-                }
-            } catch (error) {
-                console.error("Personel listesi alınamadı:", error);
-            }
-        }
-
-        // Tabloyu ekrana yazdıran fonksiyon
-        function renderTable(personnelList) {
-            // Tabloyu temizle
-            personnelTableBody.innerHTML = "";
-
-            // Listeyi tabloya ekle
-            personnelList.forEach(person => {
-                const row = document.createElement("tr");
-
-                row.innerHTML = `
-                    <td>${person.id}</td>
-                    <td>${person.name}</td>
-                    <td>${person.phone}</td>
-                    <td>${person.email}</td>
-                    <td>${person.role}</td>
-                    <td>${person.status ? "Aktif" : "Pasif"}</td>
-                    <td>${new Date(person.created_at).toLocaleString()}</td>
-                    <td>
-                        <button class="update-btn" data-id="${person.id}">Düzenle</button>
-                        <button class="delete-btn" data-id="${person.id}">Sil</button>
-                    </td>
-                `;
-
-                personnelTableBody.appendChild(row);
-            });
-
-            // Silme butonlarına olay dinleyici ekle
-            document.querySelectorAll(".delete-btn").forEach(button => {
-                button.addEventListener("click", deletePersonnel);
-            });
-
-            // Güncelleme butonlarına olay dinleyici ekle
-            document.querySelectorAll(".update-btn").forEach(button => {
-                button.addEventListener("click", updatePersonnel);
-            });
-        }
-
-        // Personel silme işlemi
-        async function deletePersonnel(event) {
-            const idToDelete = event.target.getAttribute("data-id");
-
-            if (confirm("Bu personeli silmek istediğinize emin misiniz?")) {
+        document.addEventListener("DOMContentLoaded", () => {
+            const personnelTableBody = document.getElementById("personnel-table-body");
+            const personnelForm = document.getElementById("personnel-form");
+            let editingPersonnelId = null;
+    
+            // Render personnel list
+            async function renderTable() {
                 try {
-                    const response = await fetch(`${DELETE_PERSONNEL_URL}/${idToDelete}`, {
-                        method: "DELETE",
-                        headers: {
-                            'Authorization': `Bearer ${JWT_TOKEN}`
-                        }
-                    });
-                    const result = await response.json();
-
-                    if (result.success) {
-                        alert("Personel başarıyla silindi.");
-                        fetchPersonnelList(); // Listeyi güncelle
+                    const response = await fetch("/get-personnels");
+                    const data = await response.json();
+    
+                    if (data.success) {
+                        personnelTableBody.innerHTML = "";
+    
+                        data.data.forEach(person => {
+                            const row = document.createElement("tr");
+                            row.innerHTML = `
+                                <td>${person.id}</td>
+                                <td>${person.name}</td>
+                                <td>${person.phone}</td>
+                                <td>${person.email}</td>
+                                <td>${person.role}</td>
+                                <td>${person.status ? "Aktif" : "Pasif"}</td>
+                                <td>
+                                    <button class="update-btn" data-id="${person.id}">Düzenle</button>
+                                    <button class="delete-btn" data-id="${person.id}">Sil</button>
+                                </td>
+                            `;
+                            personnelTableBody.appendChild(row);
+                        });
+    
+                        attachEventListeners();
                     } else {
-                        alert(result.message);
+                        console.error(data.message);
                     }
                 } catch (error) {
-                    console.error("Personel silinemedi:", error);
+                    console.error("Tablo güncellenirken hata oluştu:", error);
                 }
             }
-        }
-
-        // Personel güncelleme işlemi
-        async function updatePersonnel(event) {
-            const idToUpdate = event.target.getAttribute("data-id");
-
-            try {
-                const response = await fetch(`${GET_PERSONNEL_URL}/${idToUpdate}`, {
-                    headers: {
-                        'Authorization': `Bearer ${JWT_TOKEN}`
-                    }
-                });
-                const result = await response.json();
-
-                if (result.success) {
-                    const person = result.data;
-                    document.getElementById("name").value = person.name;
-                    document.getElementById("phone").value = person.phone;
-                    document.getElementById("email").value = person.email;
-                    document.getElementById("role").value = person.role;
-                    document.getElementById("status").value = person.status;
-
-                    personnelForm.addEventListener("submit", async (event) => {
-                        event.preventDefault();
-
-                        const formData = new FormData(personnelForm);
-                        const updatedPersonnelData = {
-                            name: formData.get("name"),
-                            phone: formData.get("phone"),
-                            email: formData.get("email"),
-                            role: formData.get("role"),
-                            status: formData.get("status") === "true"
-                        };
-
-                        try {
-                            const response = await fetch(`${UPDATE_PERSONNEL_URL}/${idToUpdate}`, {
-                                method: "PUT",
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                    'Authorization': `Bearer ${JWT_TOKEN}`
-                                },
-                                body: JSON.stringify(updatedPersonnelData)
-                            });
-
-                            const result = await response.json();
-
-                            if (result.success) {
-                                alert("Personel başarıyla güncellendi.");
-                                fetchPersonnelList(); // Listeyi güncelle
-                            } else {
-                                alert(result.message);
-                            }
-                        } catch (error) {
-                            console.error("Personel güncellenemedi:", error);
-                        }
+    
+            // Attach event listeners to buttons
+            function attachEventListeners() {
+                document.querySelectorAll(".delete-btn").forEach(button => {
+                    button.addEventListener("click", async (event) => {
+                        const id = event.target.getAttribute("data-id");
+                        await deletePersonnel(id);
+                        renderTable();
                     });
-                } else {
-                    alert(result.message);
-                }
-            } catch (error) {
-                console.error("Personel bilgisi alınamadı:", error);
+                });
+    
+                document.querySelectorAll(".update-btn").forEach(button => {
+                    button.addEventListener("click", async (event) => {
+                        const id = event.target.getAttribute("data-id");
+                        await loadPersonnelForUpdate(id);
+                    });
+                });
             }
-        }
-
-        // Sayfa yüklendiğinde personel listesini getir
-        fetchPersonnelList();
-    });
+    
+            // Add new personnel or update existing one
+            personnelForm.addEventListener("submit", async (event) => {
+                event.preventDefault();
+    
+                const formData = new FormData(personnelForm);
+                const personnel = {
+                    name: formData.get("name"),
+                    phone: formData.get("phone"),
+                    role: formData.get("role"),
+                    status: formData.get("status") === "true"
+                };
+    
+                if (editingPersonnelId) {
+                    await updatePersonnel(editingPersonnelId, personnel);
+                } else {
+                    await addPersonnel(personnel);
+                }
+    
+                personnelForm.reset();
+                editingPersonnelId = null;
+                renderTable();
+            });
+    
+            // Add personnel
+            async function addPersonnel(personnel) {
+                try {
+                    const response = await fetch("/add-personnel", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(personnel)
+                    });
+                    const data = await response.json();
+                    if (!data.success) console.error(data.message);
+                } catch (error) {
+                    console.error("Personel eklenirken hata oluştu:", error);
+                }
+            }
+    
+            // Delete personnel
+            async function deletePersonnel(id) {
+                try {
+                    const response = await fetch(`/delete-personnel/${id}`, { method: "DELETE" });
+                    const data = await response.json();
+                    if (!data.success) console.error(data.message);
+                } catch (error) {
+                    console.error("Personel silinirken hata oluştu:", error);
+                }
+            }
+    
+            // Update personnel
+            async function updatePersonnel(id, personnel) {
+                try {
+                    const response = await fetch(`/update-personnel/${id}`, {
+                        method: "PUT",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(personnel)
+                    });
+                    const data = await response.json();
+                    if (!data.success) console.error(data.message);
+                } catch (error) {
+                    console.error("Personel güncellenirken hata oluştu:", error);
+                }
+            }
+    
+            // Load personnel for update
+            async function loadPersonnelForUpdate(id) {
+                try {
+                    const response = await fetch("/get-personnels");
+                    const data = await response.json();
+                    const person = data.data.find(p => p.id == id);
+    
+                    if (person) {
+                        document.getElementById("name").value = person.name;
+                        document.getElementById("phone").value = person.phone;
+                        document.getElementById("role").value = person.role;
+                        document.getElementById("status").checked = person.status;
+                        editingPersonnelId = id;
+                    }
+                } catch (error) {
+                    console.error("Personel yüklenirken hata oluştu:", error);
+                }
+            }
+    
+            // Initial render
+            renderTable();
+        });
     </script>
 </body>
 </html>

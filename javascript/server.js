@@ -533,26 +533,27 @@ app.get('/get-tasks', authenticateJWT, (req, res) => {
 });
 
 // Kullanıcı ekleme
-app.post("/add-personnel", (req, res) => {
-    const token = req.headers.authorization?.split(" ")[1];
-    if (!token) {
-        return res.status(401).json({ success: false, message: "Yetkisiz erişim." });
-    }
+app.post("/add-personnel", authenticateJWT, (req, res) => {
+    const { name, phone, role, status } = req.body;
+    const eklenme_tarihi = new Date().toISOString();
+    const emailFromToken = req.user.email; // Token'dan alınan email
 
-    jwt.verify(token, SECRET_KEY, (err, user) => {
+    // Email'in benzersiz olduğunu kontrol et
+    const checkEmailQuery = `SELECT * FROM personeller WHERE email = ?`;
+    db.get(checkEmailQuery, [emailFromToken], (err, existingUser) => {
         if (err) {
-            return res.status(403).json({ success: false, message: "Token geçersiz." });
+            return res.status(500).json({ success: false, message: "E-posta kontrolü yapılırken hata oluştu.", error: err.message });
         }
 
-        const { name, phone, email, role, status } = req.body;
-        const created_at = new Date().toISOString();
+        if (existingUser) {
+            return res.status(400).json({ success: false, message: "Bu e-posta zaten mevcut." });
+        }
 
         const insertPersonnelQuery = `
-            INSERT INTO personnel (name, phone, email, role, status, created_at)
+            INSERT INTO personeller (name, phone, email, role, status, eklenme_tarihi)
             VALUES (?, ?, ?, ?, ?, ?)
         `;
-
-        db.run(insertPersonnelQuery, [name, phone, email, role, status, created_at], function (err) {
+        db.run(insertPersonnelQuery, [name, phone, emailFromToken, role, status, eklenme_tarihi], function (err) {
             if (err) {
                 console.error("Personel eklenirken hata oluştu:", err.message);
                 return res.status(500).json({ success: false, message: "Personel eklenirken hata oluştu.", error: err.message });
@@ -562,72 +563,62 @@ app.post("/add-personnel", (req, res) => {
     });
 });
 
-// Kullanıcı silme
-app.delete("/delete-personnel/:id", (req, res) => {
-    const token = req.headers.authorization?.split(" ")[1];
-    if (!token) {
-        return res.status(401).json({ success: false, message: "Yetkisiz erişim." });
-    }
+// Tüm personelleri listeleme
+app.get("/get-personnels", authenticateJWT, (req, res) => {
+    const getPersonnelQuery = `SELECT * FROM personeller`;
 
-    jwt.verify(token, SECRET_KEY, (err, user) => {
+    db.all(getPersonnelQuery, [], (err, rows) => {
         if (err) {
-            return res.status(403).json({ success: false, message: "Token geçersiz." });
+            console.error("Personeller getirilirken hata oluştu:", err.message);
+            return res.status(500).json({ success: false, message: "Personeller getirilirken hata oluştu.", error: err.message });
         }
 
-        const personnelId = req.params.id;
+        res.status(200).json({ success: true, data: rows });
+    });
+});
 
-        const deletePersonnelQuery = `
-            DELETE FROM personnel WHERE id = ?
-        `;
+// Kullanıcı silme
+app.delete("/delete-personnel/:id", authenticateJWT, (req, res) => {
+    const personnelId = req.params.id;
 
-        db.run(deletePersonnelQuery, [personnelId], function (err) {
-            if (err) {
-                console.error("Personel silinirken hata oluştu:", err.message);
-                return res.status(500).json({ success: false, message: "Personel silinirken hata oluştu.", error: err.message });
-            }
+    const deletePersonnelQuery = `DELETE FROM personeller WHERE id = ?`;
 
-            if (this.changes === 0) {
-                return res.status(404).json({ success: false, message: "Personel bulunamadı." });
-            }
+    db.run(deletePersonnelQuery, [personnelId], function (err) {
+        if (err) {
+            console.error("Personel silinirken hata oluştu:", err.message);
+            return res.status(500).json({ success: false, message: "Personel silinirken hata oluştu.", error: err.message });
+        }
 
-            res.status(200).json({ success: true, message: "Personel başarıyla silindi." });
-        });
+        if (this.changes === 0) {
+            return res.status(404).json({ success: false, message: "Personel bulunamadı." });
+        }
+
+        res.status(200).json({ success: true, message: "Personel başarıyla silindi." });
     });
 });
 
 // Kullanıcı düzenleme
-app.put("/update-personnel/:id", (req, res) => {
-    const token = req.headers.authorization?.split(" ")[1];
-    if (!token) {
-        return res.status(401).json({ success: false, message: "Yetkisiz erişim." });
-    }
+app.put("/update-personnel/:id", authenticateJWT, (req, res) => {
+    const personnelId = req.params.id;
+    const { name, phone, role, status } = req.body;
 
-    jwt.verify(token, SECRET_KEY, (err, user) => {
+    const updatePersonnelQuery = `
+        UPDATE personeller
+        SET name = ?, phone = ?, role = ?, status = ?
+        WHERE id = ?
+    `;
+
+    db.run(updatePersonnelQuery, [name, phone, role, status, personnelId], function (err) {
         if (err) {
-            return res.status(403).json({ success: false, message: "Token geçersiz." });
+            console.error("Personel güncellenirken hata oluştu:", err.message);
+            return res.status(500).json({ success: false, message: "Personel güncellenirken hata oluştu.", error: err.message });
         }
 
-        const personnelId = req.params.id;
-        const { name, phone, email, role, status } = req.body;
+        if (this.changes === 0) {
+            return res.status(404).json({ success: false, message: "Personel bulunamadı." });
+        }
 
-        const updatePersonnelQuery = `
-            UPDATE personnel
-            SET name = ?, phone = ?, email = ?, role = ?, status = ?
-            WHERE id = ?
-        `;
-
-        db.run(updatePersonnelQuery, [name, phone, email, role, status, personnelId], function (err) {
-            if (err) {
-                console.error("Personel güncellenirken hata oluştu:", err.message);
-                return res.status(500).json({ success: false, message: "Personel güncellenirken hata oluştu.", error: err.message });
-            }
-
-            if (this.changes === 0) {
-                return res.status(404).json({ success: false, message: "Personel bulunamadı." });
-            }
-
-            res.status(200).json({ success: true, message: "Personel başarıyla güncellendi." });
-        });
+        res.status(200).json({ success: true, message: "Personel başarıyla güncellendi." });
     });
 });
 
