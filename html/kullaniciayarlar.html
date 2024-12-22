@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kullanıcı Ayarları</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f4;
+        margin: 0;
+        padding: 0;
+    }
+
+    main {
+        max-width: 800px;
+        margin: 20px auto;
+        padding: 20px;
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    h1, h2 {
+        color: #333;
+    }
+
+    form {
+        margin-bottom: 20px;
+    }
+
+    label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: bold;
+    }
+
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    input[type="file"],
+    select {
+        width: 100%;
+        padding: 8px;
+        margin-bottom: 10px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+    }
+
+    input[type="checkbox"] {
+        margin-right: 10px;
+    }
+
+    fieldset {
+        border: 1px solid #ccc;
+        padding: 10px;
+        border-radius: 4px;
+        margin-bottom: 10px;
+    }
+
+    legend {
+        font-weight: bold;
+    }
+
+    button[type="submit"] {
+        display: block;
+        width: 100%;
+        padding: 10px;
+        background-color: #007bff;
+        color: #fff;
+        border: none;
+        border-radius: 4px;
+        font-size: 16px;
+        cursor: pointer;
+    }
+
+    button[type="submit"]:hover {
+        background-color: #0056b3;
+    }
+
+    #feedback {
+        margin-top: 20px;
+        padding: 10px;
+        border-radius: 4px;
+        background-color: #d4edda;
+        color: #155724;
+        display: none;
+    }
+</style>
+<body>
+    <main>
+        <h1>Kullanıcı Ayarları</h1>
+        
+        <!-- Kullanıcı bilgileri  -->
+        <section aria-labelledby="user-info">
+            <h2 id="user-info">Kullanıcı Bilgileri</h2>
+            <form id="user-info-form">
+                <label for="user-name">Kullanıcı Adı:</label>
+                <input type="text" id="user-name" name="user-name" value="Current User Name" required>
+                
+                <label for="user-email">Mail adresi:</label>
+                <input type="email" id="user-email" name="user-email" value="user@example.com" required>
+                
+                <label for="profile-picture">Profil Fotoğrafı:</label>
+                <input type="file" id="profile-picture" name="profile-picture">
+            </form>
+        </section>
+        
+        <!-- Bildirim Ayarları -->
+        <section aria-labelledby="notification-settings">
+            <h2 id="notification-settings">Bildirim Ayarları</h2>
+            <form id="notification-settings-form">
+                <fieldset>
+                    <legend>Bildirimleri Aç/Kapat</legend>
+                    <label>
+                        <input type="checkbox" name="project-updates" checked>
+                        Proje Güncellemeleri
+                    </label>
+                    <label>
+                        <input type="checkbox" name="deadlines" checked>
+                        Son teslim tarihleri
+                    </label>
+                    <label>
+                        <input type="checkbox" name="messages">
+                        Mesajlar
+                    </label>
+                </fieldset>
+                
+                <label for="notification-method">Tercih Edilen Bildirim Yöntemi:</label>
+                <select id="notification-method" name="notification-method">
+                    <option value="email">Email</option>
+                    <option value="sms">SMS</option>
+                    <option value="in-app">Proje managment sisteminde</option>
+                </select>
+            </form>
+        </section>
+        
+        <!-- Proje Ayaralrı -->
+        <section aria-labelledby="project-preferences">
+            <h2 id="project-preferences">Proje Ayarları</h2>
+            <form id="project-preferences-form">
+                <label for="default-view">Varsayılan Proje Görünümü:</label>
+                <select id="default-view" name="default-view">
+                    <option value="list">Liste</option>
+                    <option value="kanban">Kanban</option>
+                    <option value="calendar">Takvim</option>
+                </select>
+                
+            </form>
+        </section>
+        
+        <!-- Account Security -->
+        <section aria-labelledby="account-security">
+            <h2 id="account-security">Hesap Güvenliği </h2>
+            <form id="account-security-form">
+                <label for="current-password">Şu anki şifre:</label>
+                <input type="password" id="current-password" name="current-password" required>
+                
+                <label for="new-password">Yeni şifre:</label>
+                <input type="password" id="new-password" name="new-password" required>
+                
+                <label for="confirm-new-password">Yeni şifreyi onayla:</label>
+                <input type="password" id="confirm-new-password" name="confirm-new-password" required>
+                            </form>
+        </section>
+        
+        <!-- Kaydet butonu -->
+        <button type="submit" form="user-info-form" form="notification-settings-form" form="project-preferences-form" form="account-security-form">Kaydet</button>
+        
+        <!-- Feed back -->
+        <div id="feedback" role="alert" aria-live="assertive"></div>
+    </main>
+</body>
+</html>

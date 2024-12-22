@@ -57,15 +57,16 @@
            <li><a href="personeller.html"><span class="icon teal"><i class="fas fa-user-friends"></i></span><span class="text">Personeller</span></a></li>
            <li>
             <a href="#">
-                <span class="icon light-blue"><i class="fas fa-chart-bar"></i></span><span class="text">Raporlar</span>
+                <span class="icon light-blue"><i class="fas fa-chart-bar"></i></span><span class="text">Ayarlar ve Destek</span>
                 <button class="plus-button" onclick="toggleSubMenu('raporlarSubmenu', 'circle-raporlar')">+</button>
             </a>
             <div class="submenu-container">
                 <div class="line"></div>
                 <div id="circle-raporlar" class="circle hidden"></div>
                 <ul class="submenu" id="raporlarSubmenu">
-                    <li><a href="satısrapor.html" onclick="moveCircle('circle-raporlar', this)">Satış Raporları</a></li>
-                    <li><a href="gelirgiderrapor.html" onclick="moveCircle('circle-raporlar', this)">Gelir Gider Raporları</a></li>
+                    <li><a href="ayarlar.html" onclick="moveCircle('circle-raporlar', this)">Firma Ayarları</a></li>
+                    <li><a href="kullaniciayarlar.html" onclick="moveCircle('circle-raporlar', this)">Kullanıcı Ayarları</a></li>
+                    <li><a href="destek.html" onclick="moveCircle('circle-raporlar', this)">Destek</a></li>
                 </ul>
             </div>
         </li>
@@ -84,17 +85,133 @@
                 </ul>
             </div>
         </li>
-           <li><a href="ayarlar.html"><span class="icon gray"><i class="fas fa-wrench"></i></span><span class="text">Ayarlar</span></a></li>
-           <li><a href="destek.html"><span class="icon cyan"><i class="fas fa-comments"></i></span><span class="text">Destek</span></a></li>
        </ul>
    </div>
 
    <!-- İçerik Bölümü -->
-   <div class="content">
+  
       
-       <div id="projectContent"></div>
-   </div>
+<div class="content">
+    <div class="column" id="jobList">
+        <h2>İş Listesi</h2>
+        <div class="filters">
+            <label for="jobType">İş Türü:</label>
+            <select id="jobType">
+                <option value="fulltime">Tam Zamanlı</option>
+                <option value="parttime">Yarı Zamanlı</option>
+                <option value="internship">Staj</option>
+            </select>
+            <label for="location">Konum:</label>
+            <select id="location">
+                <option value="istanbul">İstanbul</option>
+                <option value="ankara">Ankara</option>
+                <option value="izmir">İzmir</option>
+            </select>
+            <label for="experience">Deneyim Seviyesi:</label>
+            <select id="experience">
+                <option value="junior">Yeni Başlayan</option>
+                <option value="mid">Orta Seviye</option>
+                <option value="senior">Kıdemli</option>
+            </select>
+        </div>
+        <ul class="job-list">
+            <li>
+                <h3>Yazılım Geliştirici</h3>
+                <p>İstanbul, Tam Zamanlı, 3+ Yıl Deneyim</p>
+                <button>Başvur</button>
+                <button>Kaydet</button>
+            </li>
+            <li>
+                <h3>Proje Yöneticisi</h3>
+                <p>Ankara, Tam Zamanlı, 5+ Yıl Deneyim</p>
+                <button>Başvur</button>
+                <button>Kaydet</button>
+            </li>
+        </ul>
+    </div>
+    <div class="column" id="agenda">
+        <h2>Ajanda</h2>
+        <div class="calendar">
+            <!-- Calendar implementation -->
+        </div>
+        <div class="agenda-items">
+            <h3>Toplantı: Proje Durumu</h3>
+            <p>12 Ekim 2023, 10:00 AM</p>
+            <textarea placeholder="Notlar..."></textarea>
+            <button>Düzenle</button>
+            <button>Sil</button>
+        </div>
+    </div>
+</div>
+<div class="content" style="padding-top: 10px;">
+    <div class="column" id="projects">
+        <h2>Mevcut Projeler</h2>
+        <ul class="project-list">
+            <li>
+                <h3>Proje A</h3>
+                <p>Durum: Devam Ediyor</p>
+                <p>Son Tarih: 30 Kasım 2023</p>
+                <p>Takım Üyeleri: Ali, Ayşe, Mehmet</p>
+                <button>Güncelle</button>
+            </li>
+            <li>
+                <h3>Proje B</h3>
+                <p>Durum: Tamamlandı</p>
+                <p>Son Tarih: 15 Ekim 2023</p>
+                <p>Takım Üyeleri: Fatma, Ahmet, Zeynep</p>
+                <button>Güncelle</button>
+            </li>
+        </ul>
+    </div>
+</div>
 
+<style>
+    .content {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+    }
+    .column {
+        flex: 1;
+        min-width: 300px;
+        padding: 20px;
+        background-color: #f9f9f9;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    .filters label, .filters select {
+        display: block;
+        margin-bottom: 10px;
+    }
+    .job-list, .project-list {
+        list-style: none;
+        padding: 0;
+    }
+    .job-list li, .project-list li {
+        margin-bottom: 20px;
+    }
+    .job-list h3, .project-list h3 {
+        margin: 0 0 10px;
+    }
+    .calendar {
+        height: 300px;
+        background-color: #fff;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        margin-bottom: 20px;
+    }
+    .agenda-items h3 {
+        margin: 0 0 10px;
+    }
+    .agenda-items textarea {
+        width: 100%;
+        height: 100px;
+        margin-bottom: 10px;
+    }
+    button {
+        margin-right: 10px;
+    }
+</style>
    <script src="/index.js"></script>
 </body>
 </html>
