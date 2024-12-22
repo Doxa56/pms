@@ -20,11 +20,6 @@
                <i class="fas fa-caret-down dropdown-icon" id="dropdownToggle"></i>
                <div class="dropdown-menu" id="dropdownMenu">
                 <li><a href="#" onclick="logout()"><span class="icon red"><i class="fas fa-sign-out-alt"></i></span><span class="text">Çıkış</span></a></li>
-                <li><a href="#"><span class="icon green"><i class="fas fa-user-cog"></i></span><span class="text">Ayarlar</span></a></li>
-                   <a href="#">Personel 1</a>
-                   <a href="#">Personel 2</a>
-                   <a href="#">Personel 3</a>
-                   <a href="#">Personel 4</a>
                </div>
            </div>
        </div>
@@ -158,40 +153,56 @@
 
         document.addEventListener('DOMContentLoaded', fetchNotes);
     </script>
-    <div class="column" id="projects">
+    <div class="column">
         <h2>Mevcut Projeler</h2>
         <div class="table-container">
             <table class="project-table task-table">
                 <thead>
                     <tr>
                         <th>Proje Adı</th>
-                        <th>Durum</th>
-                        <th>Son Tarih</th>
-                        <th>Takım Üyeleri</th>
-                        <th>İşlem</th>
+                        <th>Açıklama</th>
+                        <th>Başlangıç Tarihi</th>
+                        <th>Bitiş Tarihi</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td>Proje A</td>
-                        <td>Devam Ediyor</td>
-                        <td>30 Kasım 2023</td>
-                        <td>Ali, Ayşe, Mehmet</td>
-                        <td><button>Güncelle</button></td>
-                    </tr>
-                    <tr>
-                        <td>Proje B</td>
-                        <td>Tamamlandı</td>
-                        <td>15 Ekim 2023</td>
-                        <td>Fatma, Ahmet, Zeynep</td>
-                        <td><button>Güncelle</button></td>
-                    </tr>
+                    <!-- Projeler dinamik olarak buraya eklenecek -->
                 </tbody>
             </table>
         </div>
     </div>
-</div>
 
+    <script>
+        // Mevcut Projeleri Listeleme
+        async function fetchProjects() {
+            const token = localStorage.getItem('token');
+            const response = await fetch('/current-projects', {
+                method: 'GET',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            const result = await response.json();
+            if (result.projects) {
+                const tableBody = document.querySelector('.project-table tbody');
+                tableBody.innerHTML = '';
+
+                result.projects.forEach(project => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${project.project_name}</td>
+                        <td>${project.description}</td>
+                        <td>${new Date(project.start_date).toLocaleDateString()}</td>
+                        <td>${new Date(project.end_date).toLocaleDateString()}</td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+            } else {
+                alert(`Hata: ${result.message}`);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', fetchProjects);
+    </script>
 <style>
     .content {
         display: flex;
