@@ -598,6 +598,70 @@ app.delete("/delete-personnel/:id", authenticateJWT, (req, res) => {
         res.status(200).json({ success: true, message: "Personel başarıyla silindi." });
     });
 });
+// Şifre güncelleme
+app.post('/update-password', authenticateToken, (req, res) => {
+    const { current_password, new_password } = req.body;
+
+    if (!current_password || !new_password) {
+        return res.status(400).json({ message: 'Tüm alanları doldurun.' });
+    }
+
+    if (new_password.length < 6) {
+        return res.status(400).json({ message: 'Yeni şifre en az 6 karakter olmalı.' });
+    }
+
+    const userEmail = req.user.email;
+
+    db.get('SELECT password_hash FROM Users WHERE email = ?', [userEmail], async (err, row) => {
+        if (err) {
+            console.error('Veritabanı hatası:', err.message);
+            return res.status(500).json({ message: 'Bir hata oluştu.' });
+        }
+
+        if (!row || !(await bcrypt.compare(current_password, row.password_hash))) {
+            return res.status(400).json({ message: 'Mevcut şifre yanlış.' });
+        }
+
+        const hashedPassword = await bcrypt.hash(new_password, 10);
+        db.run('UPDATE Users SET password_hash = ? WHERE email = ?', [hashedPassword, userEmail], (err) => {
+            if (err) {
+                console.error('Şifre güncelleme hatası:', err.message);
+                return res.status(500).json({ message: 'Şifre güncellenemedi.' });
+            }
+            res.json({ message: 'Şifre başarıyla güncellendi.' });
+        });
+    });
+});
+
+// E-posta güncelleme
+app.post('/update-email', authenticateToken, (req, res) => {
+    const { new_email, password } = req.body;
+
+    if (!new_email || !password) {
+        return res.status(400).json({ message: 'Tüm alanları doldurun.' });
+    }
+
+    const userEmail = req.user.email;
+
+    db.get('SELECT password_hash FROM Users WHERE email = ?', [userEmail], async (err, row) => {
+        if (err) {
+            console.error('Veritabanı hatası:', err.message);
+            return res.status(500).json({ message: 'Bir hata oluştu.' });
+        }
+
+        if (!row || !(await bcrypt.compare(password, row.password_hash))) {
+            return res.status(400).json({ message: 'Mevcut şifre yanlış.' });
+        }
+
+        db.run('UPDATE Users SET email = ? WHERE email = ?', [new_email, userEmail], (err) => {
+            if (err) {
+                console.error('E-posta güncelleme hatası:', err.message);
+                return res.status(500).json({ message: 'E-posta güncellenemedi.' });
+            }
+            res.json({ message: 'E-posta başarıyla güncellendi.' });
+        });
+    });
+});
 
 // Start server
 app.listen(port, () => {
