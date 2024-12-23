@@ -147,7 +147,17 @@ db.run(`
     }
 });
 
-
+db.run(`
+    CREATE TABLE IF NOT EXISTS Departments (
+        department_id INTEGER PRIMARY KEY AUTOINCREMENT,
+        department_name VARCHAR(100) NOT NULL,
+        department_type VARCHAR(50) NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+`, (err) => {
+    if (err) console.error("Departments tablosu oluşturulamadı:", err.message);
+    else console.log("Departments tablosu başarıyla oluşturuldu.");
+});
 
     // Diğer tabloları eklemek için db.run fonksiyonlarını benzer şekilde ekleyin...
 });

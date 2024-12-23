@@ -663,6 +663,86 @@ app.post('/update-email', authenticateJWT, (req, res) => {
     });
 });
 
+// Departman Ekleme
+app.post('/add-department', authenticateJWT, (req, res) => {
+    const { department_name, department_type } = req.body;
+    const { email } = req.user; // Token'dan gelen email bilgisi
+
+    if (!department_name || !department_type) {
+        return res.status(400).json({ success: false, message: "Departman adı ve türü gereklidir." });
+    }
+
+    // Kullanıcının user_id'sini buluyoruz
+    const getUserIdQuery = `SELECT user_id FROM Users WHERE email = ?`;
+    db.get(getUserIdQuery, [email], (err, user) => {
+        if (err) {
+            console.error("Kullanıcı bilgisi alınamadı:", err.message);
+            return res.status(500).json({ success: false, message: "Kullanıcı bilgisi alınamadı." });
+        }
+
+        if (!user) {
+            return res.status(404).json({ success: false, message: "Kullanıcı bulunamadı." });
+        }
+
+        const insertQuery = `
+            INSERT INTO Departments (department_name, department_type)
+            VALUES (?, ?);
+        `;
+
+        db.run(insertQuery, [department_name, department_type], function (err) {
+            if (err) {
+                console.error("Departman eklenirken hata oluştu:", err.message);
+                return res.status(500).json({ success: false, message: "Departman eklenirken hata oluştu." });
+            }
+            res.status(200).json({ success: true, message: "Departman başarıyla eklendi.", id: this.lastID });
+        });
+    });
+});
+
+// Departmanları Listele
+app.get('/get-departments', authenticateJWT, (req, res) => {
+    const query = `
+        SELECT department_id, department_name, department_type, created_at
+        FROM Departments
+        ORDER BY created_at DESC;
+    `;
+
+    db.all(query, [], (err, rows) => {
+        if (err) {
+            console.error("Departmanlar alınırken hata oluştu:", err.message);
+            return res.status(500).json({ success: false, message: "Departmanlar alınırken hata oluştu." });
+        }
+
+        res.status(200).json({ success: true, data: rows });
+    });
+});
+
+// Departman Silme
+app.delete('/delete-department/:id', authenticateJWT, (req, res) => {
+    const departmentId = req.params.id;
+
+    if (!departmentId) {
+        return res.status(400).json({ success: false, message: "Departman ID gereklidir." });
+    }
+
+    const deleteQuery = `
+        DELETE FROM Departments WHERE department_id = ?;
+    `;
+
+    db.run(deleteQuery, [departmentId], function (err) {
+        if (err) {
+            console.error("Departman silinirken hata oluştu:", err.message);
+            return res.status(500).json({ success: false, message: "Departman silinirken hata oluştu." });
+        }
+
+        if (this.changes === 0) {
+            return res.status(404).json({ success: false, message: "Departman bulunamadı." });
+        }
+
+        res.status(200).json({ success: true, message: "Departman başarıyla silindi." });
+    });
+});
+
 // Start server
 app.listen(port, () => {
     console.log(`Server is running at http://localhost:${port}/login.html`);

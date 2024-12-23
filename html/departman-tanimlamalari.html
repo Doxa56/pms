@@ -3,9 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Departman Listesi</title>
+  <title>Departman Yönetimi</title>
   <style>
-    /* Genel stil */
     body {
       font-family: Arial, sans-serif;
       background: url('background.png') no-repeat center center fixed;
@@ -42,27 +41,6 @@
       margin-top: 0;
     }
 
-    .search-bar {
-      display: flex;
-      margin-bottom: 20px;
-    }
-
-    .search-bar input {
-      flex: 1;
-      padding: 8px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-    }
-
-    .search-bar button {
-      background: #007bff;
-      color: white;
-      border: none;
-      padding: 8px 12px;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-
     table {
       width: 100%;
       border-collapse: collapse;
@@ -76,21 +54,6 @@
 
     table th {
       background-color: #f0f0f0;
-    }
-    
-    .pagination {
-      margin-top: 10px;
-      text-align: right;
-    }
-
-    .pagination button {
-      background: #007bff;
-      color: white;
-      border: none;
-      padding: 8px 12px;
-      margin: 0 2px;
-      border-radius: 4px;
-      cursor: pointer;
     }
 
     .departman-ekle label {
@@ -121,12 +84,13 @@
       display: none;
     }
 
-    .delete-btn,.edit-btn {
-      background-color: #28a745; /* Yeşil renk */
+    .delete-btn {
+      background-color: #dc3545;
       border: none;
       padding: 8px;
       border-radius: 4px;
       cursor: pointer;
+      color: white;
     }
   </style>
 </head>
@@ -135,17 +99,13 @@
     <!-- Departman Listesi -->
     <div class="departman-listesi">
       <h2>Departman Listesi</h2>
-      <div class="search-bar">
-        <input type="text" placeholder="Ara...">
-        <button>🔍</button>
-      </div>
       <table>
         <thead>
           <tr>
             <th>ID</th>
             <th>Departman Adı</th>
             <th>Departman Tipi</th>
-            <th>Yetkili Personeller</th>
+            <th>Oluşturulma Tarihi</th>
             <th>İşlem</th>
           </tr>
         </thead>
@@ -153,10 +113,6 @@
           <!-- Dinamik olarak tablonun içeriği eklenecek -->
         </tbody>
       </table>
-      <div class="pagination">
-        <button>Previous</button>
-        <button>Next</button>
-      </div>
     </div>
 
     <!-- Departman Ekle -->
@@ -181,83 +137,96 @@
   </div>
 
   <script>
-    // Başlangıçta bulunan departmanlar
-    const departmanlar = [
-      { id: 1, adi: 'YÖNETİM', tipi: 'Genel Departman', personeller: 'Personel 1', durum: true },
-      { id: 2, adi: 'OPERASYON', tipi: 'Genel Departman', personeller: 'Personel 1', durum: true },
-      { id: 3, adi: 'MUHASEBE', tipi: 'Genel Departman', personeller: 'Personel 2', durum: true },
-      { id: 4, adi: 'SATIŞ', tipi: 'Genel Departman', personeller: 'Personel 2', durum: true },
-      { id: 5, adi: 'ÇİZİM', tipi: 'Proje Departmanı', personeller: 'Personel 3, Personel 4', durum: true },
-      { id: 6, adi: 'TASARIM', tipi: 'Proje Departmanı', personeller: 'Personel 3', durum: true },
-      { id: 7, adi: 'UYGULAMA', tipi: 'Proje Departmanı', personeller: 'Personel 3', durum: true }
-    ];
+    const jwtToken = localStorage.getItem('token'); // JWT token'ı depodan al
 
-    // Departmanları tabloya ekleme
-    function tabloyuGuncelle() {
-      const departmanTable = document.querySelector('#departman-table');
-      departmanTable.innerHTML = ''; // Tabloyu temizle
-      departmanlar.forEach((departman) => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-          <td>${departman.id}</td>
-          <td>${departman.adi}</td>
-          <td>${departman.tipi}</td>
-          <td>${departman.personeller}</td>
-          <td>
-            <button class="edit-btn">✏️</button>
-            <button class="delete-btn">🗑️</button>
-          </td>
-        `;
-        departmanTable.appendChild(row);
-
-        // Silme işlemi
-        row.querySelector('.delete-btn').addEventListener('click', () => {
-          const index = departmanlar.findIndex(d => d.id === departman.id);
-          if (index !== -1) {
-            departmanlar.splice(index, 1);
-            tabloyuGuncelle();
-          }
+    // Departmanları Listele
+    async function loadDepartments() {
+      try {
+        const response = await fetch('/get-departments', {
+          method: 'GET',
+          headers: { 'Authorization': `Bearer ${jwtToken}` }
         });
+        const data = await response.json();
 
-        // Düzenleme işlemi
-        row.querySelector('.edit-btn').addEventListener('click', () => {
-          const yeniAd = prompt('Yeni departman adını girin:', departman.adi);
-          if (yeniAd) {
-            departman.adi = yeniAd;
-            tabloyuGuncelle();
-          }
-        });
-      });
+        if (response.ok) {
+          const tableBody = document.getElementById('departman-table');
+          tableBody.innerHTML = '';
+
+          data.data.forEach(department => {
+            const row = `
+              <tr>
+                <td>${department.department_id}</td>
+                <td>${department.department_name}</td>
+                <td>${department.department_type}</td>
+                <td>${new Date(department.created_at).toLocaleString()}</td>
+                <td><button class="delete-btn" onclick="deleteDepartment(${department.department_id})">Sil</button></td>
+              </tr>
+            `;
+            tableBody.innerHTML += row;
+          });
+        } else {
+          alert(data.message || 'Departmanlar yüklenemedi.');
+        }
+      } catch (error) {
+        console.error('Departmanlar alınırken hata oluştu:', error);
+      }
     }
 
-    // Departman ekleme formu
-    document.getElementById('ekle-form').addEventListener('submit', function (e) {
+    // Departman Ekle
+    document.getElementById('ekle-form').addEventListener('submit', async function(e) {
       e.preventDefault();
-      const departmanAdi = document.getElementById('departmanAdi').value.trim();
-      const departmanTipi = document.getElementById('departmanTipi').value;
 
-      if (departmanAdi) {
-        const yeniDepartman = {
-          id: departmanlar.length + 1,
-          adi: departmanAdi,
-          tipi: departmanTipi,
-          personeller: 'Yeni Personel',
-          durum: true
-        };
-        departmanlar.push(yeniDepartman);
-        tabloyuGuncelle();
+      const departmentName = document.getElementById('departmanAdi').value;
+      const departmentType = document.getElementById('departmanTipi').value;
 
-        // Başarı mesajı
-        const message = document.querySelector('.success-message');
-        message.style.display = 'block';
-        setTimeout(() => {
-          message.style.display = 'none';
-        }, 3000);
+      try {
+        const response = await fetch('/add-department', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${jwtToken}`
+          },
+          body: JSON.stringify({ department_name: departmentName, department_type: departmentType })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          alert('Departman başarıyla eklendi!');
+          loadDepartments();
+        } else {
+          alert(data.message || 'Departman eklenirken hata oluştu.');
+        }
+      } catch (error) {
+        console.error('Departman eklenirken hata oluştu:', error);
       }
     });
 
-    // Sayfa yüklendiğinde tabloyu güncelle
-    tabloyuGuncelle();
+    // Departman Sil
+    async function deleteDepartment(departmentId) {
+      if (!confirm('Bu departmanı silmek istediğinize emin misiniz?')) return;
+
+      try {
+        const response = await fetch(`/delete-department/${departmentId}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${jwtToken}` }
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          alert('Departman başarıyla silindi!');
+          loadDepartments();
+        } else {
+          alert(data.message || 'Departman silinirken hata oluştu.');
+        }
+      } catch (error) {
+        console.error('Departman silinirken hata oluştu:', error);
+      }
+    }
+
+    // Sayfa yüklendiğinde departmanları listele
+    window.onload = loadDepartments;
   </script>
 </body>
 </html>
