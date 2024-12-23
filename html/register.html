@@ -13,8 +13,7 @@
     <div class="container">
         <div class="form-container">
             <h2>Register</h2>
-            <!-- 'onsubmit' kaldırıldı, form direkt submit olacak -->
-            <form action="/register" method="post">
+            <form id="registerForm" action="/register" method="post">
                 <input type="text" name="username" placeholder="Kullanıcı Adı" required>
                 <input type="text" name="email" placeholder="Email" required>
                 <input type="password" name="password" placeholder="Şifre" required>
@@ -29,5 +28,22 @@
             </form>
         </div>
     </div>
+    <script>
+        document.getElementById('registerForm').onsubmit = function(event) {
+            event.preventDefault();
+            var form = this;
+            var xhr = new XMLHttpRequest();
+            xhr.open(form.method, form.action, true);
+            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+            xhr.onload = function() {
+                if (xhr.status === 200) {
+                    window.location.href = '/login.html';
+                } else {
+                    alert('Kayıt işlemi başarısız oldu.');
+                }
+            };
+            xhr.send(new URLSearchParams(new FormData(form)).toString());
+        };
+    </script>
 </body>
 </html>

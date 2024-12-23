@@ -4,13 +4,66 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mevcut Projeler</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: url('background.png') no-repeat center center fixed;
+            background-size: cover;
+        }
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: rgba(255, 255, 255, 0.9); /* Slightly transparent background */
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+        h2 {
+            text-align: center;
+            color: #333;
+        }
+        #backToHome {
+            display: block;
+            margin: 0 auto 20px auto;
+            padding: 10px 20px;
+            background-color: #007BFF;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        #backToHome:hover {
+            background-color: #0056b3;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        li {
+            background-color: #f9f9f9;
+            margin: 10px 0;
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+        }
+        li strong {
+            display: block;
+            margin-bottom: 5px;
+            color: #007BFF;
+        }
+    </style>
 </head>
 <body>
-    <h2>Mevcut Projeler</h2>
-    <button id="backToHome">Ana Sayfaya Dön</button>
-    <ul id="currentProjectsList">
-        <!-- Mevcut projeler burada listelenecek -->
-    </ul>
+    <div class="container">
+        <h2>Mevcut Projeler</h2>
+        <button id="backToHome">Ana Sayfaya Dön</button>
+        <ul id="currentProjectsList">
+            <!-- Mevcut projeler burada listelenecek -->
+        </ul>
+    </div>
     
     <script>
         // Kullanıcı login değilse login sayfasına yönlendir
@@ -44,7 +97,6 @@
                     const projectList = document.getElementById('currentProjectsList');
                     if (data.projects.length === 0) {
                         projectList.innerHTML = "<li>Gösterilecek mevcut proje bulunamadı.</li>";
-                        return;
                     }
                     data.projects.forEach(project => {
                         const listItem = document.createElement('li');

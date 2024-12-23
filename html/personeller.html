@@ -9,12 +9,21 @@
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
-            background-color: #f4f4f9;
+            background: url('background.png') no-repeat center center fixed;
+            background-size: cover;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
 
         .container {
             display: flex;
             padding: 20px;
+            width: 100%;
+            max-width: 1200px;
+            background: rgba(255, 255, 255, 0.8); /* Arka planın biraz şeffaf olması için */
+            border-radius: 10px;
         }
 
         .personnel-list, .personnel-form {
@@ -30,7 +39,7 @@
         }
 
         .personnel-form {
-            flex: 2;
+            flex: 1;
         }
 
         table {
@@ -81,28 +90,6 @@
 </head>
 <body>
     <div class="container">
-        <div class="personnel-list">
-            <h3>Personel Listesi</h3>
-            <div class="search-bar">
-                <input type="text" id="search-input" placeholder="Ara...">
-            </div>
-            <table>
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Ad Soyad</th>
-                        <th>GSM</th>
-                        <th>E-Posta</th>
-                        <th>Görev</th>
-                        <th>İşlem</th>
-                    </tr>
-                </thead>
-                <tbody id="personnel-table-body">
-                    <!-- Personel satırları buraya eklenecek -->
-                </tbody>
-            </table>
-        </div>
-
         <div class="personnel-form">
             <h3>Personel Ekle</h3>
             <form id="personnel-form">
@@ -124,6 +111,28 @@
                 </div>
                 <button type="submit">Personel Ekle</button>
             </form>
+        </div>
+
+        <div class="personnel-list">
+            <h3>Personel Listesi</h3>
+            <div class="search-bar">
+                <input type="text" id="search-input" placeholder="Ara...">
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Ad Soyad</th>
+                        <th>GSM</th>
+                        <th>E-Posta</th>
+                        <th>Görev</th>
+                        <th>İşlem</th>
+                    </tr>
+                </thead>
+                <tbody id="personnel-table-body">
+                    <!-- Personel satırları buraya eklenecek -->
+                </tbody>
+            </table>
         </div>
     </div>
     <script>
