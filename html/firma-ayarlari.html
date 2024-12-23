@@ -168,6 +168,91 @@
         </form>
     </div>
     <script>
+        // Verileri localStorage'a kaydet
+        function saveFormData() {
+            const formData = {
+                firmaAdi: document.getElementById("firmaAdi").value,
+                firmaTelefon: document.getElementById("firmaTelefon").value,
+                yetkiliKisi: document.getElementById("yetkiliKisi").value,
+                firmaGSM: document.getElementById("firmaGSM").value,
+                firmaSehir: document.getElementById("firmaSehir").value,
+                firmaVergiNo: document.getElementById("firmaVergiNo").value,
+                firmaIlce: document.getElementById("firmaIlce").value,
+                firmaAdres: document.getElementById("firmaAdres").value,
+            };
+            localStorage.setItem("firmaFormData", JSON.stringify(formData));
+        }
+    
+        // LocalStorage'dan verileri yükle
+        function loadFormData() {
+            const savedData = localStorage.getItem("firmaFormData");
+            if (savedData) {
+                const formData = JSON.parse(savedData);
+                document.getElementById("firmaAdi").value = formData.firmaAdi || "";
+                document.getElementById("firmaTelefon").value = formData.firmaTelefon || "";
+                document.getElementById("yetkiliKisi").value = formData.yetkiliKisi || "";
+                document.getElementById("firmaGSM").value = formData.firmaGSM || "";
+                document.getElementById("firmaSehir").value = formData.firmaSehir || "";
+                document.getElementById("firmaVergiNo").value = formData.firmaVergiNo || "";
+                document.getElementById("firmaIlce").value = formData.firmaIlce || "";
+                document.getElementById("firmaAdres").value = formData.firmaAdres || "";
+            }
+        }
+    
+        // Şehirleri yükle
+        function loadCities() {
+            fetch("https://turkiyeapi.herokuapp.com/api/v1/provinces")
+                .then(response => response.json())
+                .then(data => {
+                    const citySelect = document.getElementById("firmaSehir");
+                    citySelect.innerHTML = '<option value="">Şehir seçin</option>';
+                    data.data.forEach(city => {
+                        citySelect.innerHTML += `<option value="${city.name}">${city.name}</option>`;
+                    });
+                    // LocalStorage'daki şehir bilgisi varsa seçili yap
+                    const savedData = localStorage.getItem("firmaFormData");
+                    if (savedData) {
+                        const formData = JSON.parse(savedData);
+                        citySelect.value = formData.firmaSehir || "";
+                        if (formData.firmaSehir) {
+                            loadDistricts(formData.firmaSehir);
+                        }
+                    }
+                })
+                .catch(error => console.error("Şehirleri yüklerken hata oluştu:", error));
+        }
+    
+        // İlçeleri yükle
+        function loadDistricts(province) {
+            fetch(`https://turkiyeapi.herokuapp.com/api/v1/districts?province=${province}`)
+                .then(response => response.json())
+                .then(data => {
+                    const districtSelect = document.getElementById("firmaIlce");
+                    districtSelect.innerHTML = '<option value="">İlçe seçin</option>';
+                    data.data.forEach(district => {
+                        districtSelect.innerHTML += `<option value="${district.name}">${district.name}</option>`;
+                    });
+                    // LocalStorage'daki ilçe bilgisi varsa seçili yap
+                    const savedData = localStorage.getItem("firmaFormData");
+                    if (savedData) {
+                        const formData = JSON.parse(savedData);
+                        districtSelect.value = formData.firmaIlce || "";
+                    }
+                })
+                .catch(error => console.error("İlçeleri yüklerken hata oluştu:", error));
+        }
+    
+        // Şehir seçimi değiştiğinde ilçeleri yükle
+        document.getElementById("firmaSehir").addEventListener("change", function () {
+            const selectedCity = this.value;
+            if (selectedCity) {
+                loadDistricts(selectedCity);
+            } else {
+                document.getElementById("firmaIlce").innerHTML = '<option value="">İlçe seçin</option>';
+            }
+        });
+    
+        // Formu gönderirken verileri kaydet
         document.getElementById("guncelleBtn").addEventListener("click", function () {
             const token = localStorage.getItem('token'); // Token'i localStorage'dan al
             if (!token) {
@@ -175,28 +260,28 @@
                 window.location.href = "/login.html";
                 return;
             }
-
+    
             const firmaTelefon = document.getElementById("firmaTelefon").value;
             const firmaGSM = document.getElementById("firmaGSM").value;
-
+    
             if (!firmaTelefon && !firmaGSM) {
                 alert("En az bir telefon numarası girilmelidir (Firma Telefon veya Firma GSM).");
                 return;
             }
-
+    
+            saveFormData(); // Verileri kaydet
+    
             const formData = {
                 firmaAdi: document.getElementById("firmaAdi").value,
                 firmaTelefon: firmaTelefon,
                 yetkiliKisi: document.getElementById("yetkiliKisi").value,
                 firmaGSM: firmaGSM,
                 firmaSehir: document.getElementById("firmaSehir").value,
-                firmaVergiDairesi: document.getElementById("firmaVergiDairesi").value,
                 firmaVergiNo: document.getElementById("firmaVergiNo").value,
                 firmaIlce: document.getElementById("firmaIlce").value,
                 firmaAdres: document.getElementById("firmaAdres").value,
-                tema: document.getElementById("tema").value
             };
-
+    
             fetch("/update-firm-info", {
                 method: "POST",
                 headers: {
@@ -218,30 +303,12 @@
                 alert("Sunucuya bağlanılamadı.");
             });
         });
+    
+        // Sayfa yüklendiğinde verileri yükle
+        document.addEventListener("DOMContentLoaded", function () {
+            loadFormData();
+            loadCities();
+        });
     </script>
-</body>
-</html>
-<script>
-    document.getElementById("firmaSehir").addEventListener("input", function () {
-        const sehir = this.value;
-        if (sehir.length > 2) {
-            fetch(`https://turkiyeapi.herokuapp.com/api/v1/provinces?name=${sehir}`)
-                .then(response => response.json())
-                .then(data => {
-                    const sehirSelect = document.createElement("select");
-                    sehirSelect.id = "sehirSelect";
-                    sehirSelect.innerHTML = data.map(item => `<option value="${item.name}">${item.name}</option>`).join("");
-                    this.parentNode.appendChild(sehirSelect);
-                    sehirSelect.addEventListener("change", function () {
-                        document.getElementById("firmaSehir").value = this.value;
-                        fetch(`https://turkiyeapi.herokuapp.com/api/v1/districts?province=${this.value}`)
-                            .then(response => response.json())
-                            .then(data => {
-                                const ilceSelect = document.getElementById("firmaIlce");
-                                ilceSelect.innerHTML = data.map(item => `<option value="${item.name}">${item.name}</option>`).join("");
-                            });
-                    });
-                });
-        }
-    });
-</script>
+    
+    
