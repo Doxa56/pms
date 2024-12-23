@@ -1,271 +1,289 @@
 <!DOCTYPE html>
-<html lang="tr">
-
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Görev Listesi</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #f9fafc;
-      margin: 0;
-      padding: 20px;
-      min-height: 100vh;
-      position: relative;
-      overflow: hidden;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Görev Tanımlamaları</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 0;
+        }
 
-    .background {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: url('background.png') no-repeat center center;
-      background-size: cover;
-      z-index: -1;
-    }
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
 
-    .container {
-      display: flex;
-      gap: 10px;
-      width: 90%;
-      margin: 0 auto;
-      position: relative;
-      z-index: 1;
-    }
+        h1, h2 {
+            color: #333;
+            text-align: center;
+        }
 
-    .task-list,
-    .add-task {
-      background-color: white;
-      border-radius: 8px;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-      padding: 20px;
-    }
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
 
-    .task-list {
-      flex: 2;
-    }
+        form label {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
 
-    .add-task {
-      flex: 1;
-    }
+        form input, form select {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 14px;
+        }
 
-    h2 {
-      margin: 0 0 20px;
-      font-size: 18px;
-      color: #333;
-    }
+        form button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #007BFF;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
 
-    .search-bar {
-      display: flex;
-      margin-bottom: 20px;
-    }
+        form button:hover {
+            background-color: #0056b3;
+        }
 
-    .search-bar input {
-      flex: 1;
-      padding: 5px 10px;
-      border: 1px solid #ccc;
-      border-radius: 4px 0 0 4px;
-    }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
 
-    .search-bar button {
-      padding: 5px 15px;
-      background-color: #007bff;
-      border: none;
-      color: white;
-      cursor: pointer;
-      border-radius: 0 4px 4px 0;
-    }
+        table th, table td {
+            text-align: left;
+            padding: 10px;
+            border: 1px solid #ddd;
+        }
 
-    table {
-      width: 100%;
-      max-width: 100%;
-      border-collapse: collapse;
-    }
+        table th {
+            background-color: #f2f2f2;
+        }
 
-    table th,
-    table td {
-      text-align: left;
-      padding: 10px 15px;
-      border: 1px solid #ddd;
-      word-wrap: break-word;
-    }
-
-    table th {
-      background-color: #f5f5f5;
-    }
-
-    table td input[type="checkbox"] {
-      cursor: pointer;
-    }
-
-    table td button {
-      background: none;
-      border: none;
-      cursor: pointer;
-      font-size: 16px;
-    }
-
-    table td button.edit {
-      color: #007bff;
-    }
-
-    table td button.delete {
-      color: #dc3545;
-    }
-
-    .pagination {
-      margin-top: 10px;
-      display: flex;
-      justify-content: flex-end;
-      align-items: center;
-    }
-
-    .pagination button {
-      padding: 5px 10px;
-      background-color: #007bff;
-      border: none;
-      color: white;
-      cursor: pointer;
-      border-radius: 4px;
-      margin-right: 10px;
-    }
-
-    .add-task input,
-    .add-task button {
-      display: block;
-      width: calc(100% - 20px);
-      margin: 0 auto 10px auto;
-      padding: 10px;
-      border-radius: 4px;
-      border: 1px solid #ccc;
-      box-sizing: border-box;
-    }
-
-    .add-task button {
-      background-color: #28a745;
-      color: white;
-      cursor: pointer;
-    }
-
-    @media (max-width: 768px) {
-      .container {
-        flex-direction: column;
-        align-items: stretch;
-      }
-
-      .task-list,
-      .add-task {
-        width: 100%;
-        margin-bottom: 20px;
-      }
-
-      table {
-        display: block;
-        overflow-x: auto;
-        white-space: nowrap;
-      }
-
-      table th,
-      table td {
-        font-size: 14px;
-      }
-
-      table td button {
-        display: inline-block;
-        margin-right: 5px;
-      }
-    }
-  </style>
+        .task-section {
+            margin-top: 30px;
+        }
+    </style>
 </head>
-
 <body>
-  <div class="background"></div>
-  <div class="container">
-    <div class="task-list">
-      <h2>Görev Listesi</h2>
-      <div class="search-bar">
-        <input type="text" placeholder="Ara">
-        <button>🔍</button>
-      </div>
-      <table>
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Görev Adı</th>
-            <th>İşlem</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>1080</td>
-            <td>Demo Kullanıcı</td>
-            <td>
-              <button class="edit">✏️</button>
-              <button class="delete">🗑️</button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-      <div class="pagination">
-        <button>Previous</button>
-        <button>Next</button>
-      </div>
+    <div class="container">
+        <h1>Görev Tanımlamaları</h1>
+
+        <!-- Görev Ekleme Formu -->
+        <section class="form-section">
+            <h2>Yeni Görev Ekle</h2>
+            <form id="task-form">
+                <label for="task-name">Görev Adı:</label>
+                <input type="text" id="task-name" name="task_name" placeholder="Görev adını girin" required />
+
+                <label for="assigned-to">Personel Seç:</label>
+                <select id="assigned-to" name="assigned_to" required>
+                    <option value="" disabled selected>Personel seçin</option>
+                </select>
+
+                <button type="submit" class="btn">Görev Ekle</button>
+            </form>
+        </section>
+
+        <!-- Görev Listesi -->
+        <section class="task-section">
+            <h2>Mevcut Görevler</h2>
+            <table id="task-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Görev Adı</th>
+                        <th>Durum</th>
+                        <th>Atanan Personel</th>
+                        <th>Oluşturulma Tarihi</th>
+                        <th>İşlemler</th>
+                    </tr>
+                </thead>
+                <tbody id="task-table-body">
+                    <!-- Dinamik görevler buraya eklenecek -->
+                </tbody>
+            </table>
+        </section>
     </div>
-    <div class="add-task">
-      <h2>Görev Ekle</h2>
-      <input type="text" placeholder="Görev Adı">
-      <button>Görev Ekle</button>
-    </div>
-  </div>
-  <script>
-    document.querySelector('.add-task button').addEventListener('click', () => {
-      const taskName = document.querySelector('.add-task input').value.trim();
-      if (taskName) {
-        const table = document.querySelector('table tbody');
-        const row = document.createElement('tr');
 
-        row.innerHTML = `
-          <td>${Math.floor(Math.random() * 1000)}</td>
-          <td>${taskName}</td>
-          <td>
-            <button class="edit">✏️</button>
-            <button class="delete">🗑️</button>
-          </td>
-        `;
-
-        // Düzenleme Butonuna Event Listener Ekle
-        row.querySelector('.edit').addEventListener('click', () => {
-          const currentTaskName = row.cells[1].textContent;
-          const newTaskName = prompt("Görev adını düzenleyin:", currentTaskName);
-          if (newTaskName) {
-            row.cells[1].textContent = newTaskName;
-          }
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const taskTableBody = document.getElementById("task-table-body");
+            const taskForm = document.getElementById("task-form");
+            const assignedToSelect = document.getElementById("assigned-to");
+    
+            // Personel listesini getir ve dropdown'ı doldur
+            async function fetchPersonnel() {
+                try {
+                    const response = await fetch("/api/personeller", {
+                        headers: {
+                            "Authorization": `Bearer ${localStorage.getItem("token")}`
+                        }
+                    });
+    
+                    if (!response.ok) {
+                        if (response.status === 401) {
+                            alert("Yetkilendirme hatası! Lütfen giriş yapın.");
+                        }
+                        throw new Error(`Personel listesi alınırken hata oluştu: ${response.status}`);
+                    }
+    
+                    const personnel = await response.json();
+                    assignedToSelect.innerHTML = '<option value="" disabled selected>Personel seçin</option>';
+                    personnel.forEach(person => {
+                        const option = document.createElement("option");
+                        option.value = person.id;
+                        option.textContent = `${person.name} (${person.role})`;
+                        assignedToSelect.appendChild(option);
+                    });
+                } catch (error) {
+                    console.error("Personel listesi alınırken hata oluştu:", error);
+                }
+            }
+    
+            // Görev listesini getir ve tabloyu oluştur
+            async function renderTable() {
+                try {
+                    const response = await fetch("/api/gorev-listesi", {
+                        headers: {
+                            "Authorization": `Bearer ${localStorage.getItem("token")}`
+                        }
+                    });
+    
+                    if (!response.ok) {
+                        throw new Error(`Görev listesi alınırken hata oluştu: ${response.status}`);
+                    }
+    
+                    const tasks = await response.json();
+                    taskTableBody.innerHTML = ""; // Tabloyu temizle
+    
+                    tasks.forEach(task => {
+                        const row = document.createElement("tr");
+                        row.innerHTML = `
+                            <td>${task.id}</td>
+                            <td>${task.task_name}</td>
+                            <td>${task.assigned_to || "Atanmamış"}</td>
+                            <td>${task.created_at ? new Date(task.created_at).toLocaleString() : "Tarih yok"}</td>
+                            <td>
+                                <select class="assign-select" data-task-id="${task.id}">
+                                    <option value="">Atanmamış</option>
+                                </select>
+                            </td>
+                        `;
+                        taskTableBody.appendChild(row);
+                        attachAssignDropdown(row.querySelector(".assign-select"), task.assigned_to);
+                    });
+                } catch (error) {
+                    console.error("Tablo güncellenirken hata oluştu:", error);
+                }
+            }
+    
+            // Göreve personel atama dropdown'ını doldur
+            async function attachAssignDropdown(selectElement, currentAssigned) {
+                try {
+                    const response = await fetch("/api/personeller", {
+                        headers: {
+                            "Authorization": `Bearer ${localStorage.getItem("token")}`
+                        }
+                    });
+    
+                    if (!response.ok) {
+                        throw new Error(`Dropdown doldurulurken hata oluştu: ${response.status}`);
+                    }
+    
+                    const personnel = await response.json();
+                    personnel.forEach(person => {
+                        const option = document.createElement("option");
+                        option.value = person.id;
+                        option.textContent = `${person.name} (${person.role})`;
+                        if (person.name === currentAssigned) {
+                            option.selected = true;
+                        }
+                        selectElement.appendChild(option);
+                    });
+    
+                    // Dropdown'da değişiklik olduğunda görevi güncelle
+                    selectElement.addEventListener("change", async (event) => {
+                        const taskId = event.target.getAttribute("data-task-id");
+                        const assignedTo = event.target.value;
+    
+                        try {
+                            const response = await fetch(`/api/gorev-guncelle/${taskId}`, {
+                                method: "PUT",
+                                headers: {
+                                    "Content-Type": "application/json",
+                                    "Authorization": `Bearer ${localStorage.getItem("token")}`
+                                },
+                                body: JSON.stringify({ assigned_to: assignedTo })
+                            });
+    
+                            if (!response.ok) {
+                                throw new Error(`Görev atama güncellenirken hata oluştu: ${response.status}`);
+                            }
+                            renderTable(); // Güncellenmiş tabloyu tekrar yükle
+                        } catch (error) {
+                            console.error("Görev atama güncellenirken hata oluştu:", error);
+                        }
+                    });
+                } catch (error) {
+                    console.error("Atama dropdown doldurulurken hata oluştu:", error);
+                }
+            }
+    
+            // Yeni görev ekle
+            taskForm.addEventListener("submit", async (event) => {
+                event.preventDefault();
+    
+                const formData = new FormData(taskForm);
+                const task = {
+                    task_name: formData.get("task_name"),
+                    assigned_to: formData.get("assigned_to") || null
+                };
+    
+                try {
+                    const response = await fetch("/api/gorev-ekle", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "Authorization": `Bearer ${localStorage.getItem("token")}`
+                        },
+                        body: JSON.stringify(task)
+                    });
+    
+                    if (!response.ok) {
+                        const errorText = await response.text();
+                        throw new Error(`Görev eklenirken hata oluştu: ${response.status} - ${errorText}`);
+                    }
+    
+                    taskForm.reset(); // Formu temizle
+                    renderTable(); // Tabloyu güncelle
+                } catch (error) {
+                    console.error("Görev eklenirken hata oluştu:", error);
+                }
+            });
+    
+            // Sayfa yüklendiğinde personel ve görevleri yükle
+            (async () => {
+                await fetchPersonnel();
+                await renderTable();
+            })();
         });
-
-        // Silme Butonuna Event Listener Ekle
-        row.querySelector('.delete').addEventListener('click', () => {
-          row.remove();
-        });
-
-        // Tabloya Yeni Satırı Ekle
-        table.appendChild(row);
-
-        // Giriş Alanını Temizle
-        document.querySelector('.add-task input').value = '';
-      }
-    });
-
-    // Silme İşlemi için Mevcut Tablodaki Butonlara Event Listener
-    document.querySelector('table').addEventListener('click', (event) => {
-      if (event.target.classList.contains('delete')) {
-        event.target.closest('tr').remove();
-      }
-    });
-  </script>
-
+    </script>
+    
 </body>
 
 </html>

@@ -743,6 +743,84 @@ app.delete('/delete-department/:id', authenticateJWT, (req, res) => {
     });
 });
 
+app.get("/api/personeller", authenticateJWT, (req, res) => {
+    const sql = `
+        SELECT id, name, phone, role, email 
+        FROM personeller
+    `;
+
+    db.all(sql, [], (err, rows) => {
+        if (err) {
+            console.error("Database query failed:", err.message);
+            return res.status(500).send("Database query failed.");
+        }
+        res.json(rows);
+    });
+});
+
+
+// Görev Listeleme - GET /api/gorev-listesi
+app.get("/api/gorev-listesi", authenticateJWT, (req, res) => {
+    const sql = `
+        SELECT g.id, g.task_name, p.name AS assigned_to, g.created_at 
+        FROM gorevler g 
+        LEFT JOIN personeller p ON g.assigned_to = p.id
+    `;
+
+    db.all(sql, [], (err, rows) => {
+        if (err) {
+            console.error("Görevler sorgusu başarısız:", err.message);
+            return res.status(500).send("Görevler sorgusu başarısız.");
+        }
+        res.json(rows);
+    });
+});
+
+// Yeni Görev Ekle - POST /api/gorev-ekle
+app.post("/api/gorev-ekle", authenticateJWT, (req, res) => {
+    const { task_name, assigned_to } = req.body;
+
+    if (!task_name) {
+        return res.status(400).send("Görev adı belirtilmelidir.");
+    }
+
+    const sql = `
+        INSERT INTO gorevler (task_name, assigned_to)
+        VALUES (?, ?)
+    `;
+    db.run(sql, [task_name, assigned_to || null], function (err) {
+        if (err) {
+            console.error("Görev eklenirken hata oluştu:", err.message);
+            return res.status(500).send("Görev eklenirken hata oluştu.");
+        }
+        res.status(201).send({ id: this.lastID, task_name, assigned_to: assigned_to || null });
+    });
+});
+
+// Görev Güncelle - PUT /api/gorev-guncelle/:id
+app.put("/api/gorev-guncelle/:id", authenticateJWT, (req, res) => {
+    const { id } = req.params;
+    const { assigned_to } = req.body;
+
+    const sql = `
+        UPDATE gorevler
+        SET assigned_to = ?
+        WHERE id = ?
+    `;
+
+    db.run(sql, [assigned_to, id], function (err) {
+        if (err) {
+            console.error("Görev güncellenirken hata oluştu:", err.message);
+            return res.status(500).send("Görev güncellenirken hata oluştu.");
+        }
+        if (this.changes === 0) {
+            return res.status(404).send("Görev bulunamadı.");
+        }
+        res.send("Görev başarıyla güncellendi.");
+    });
+});
+
+
 // Start server
 app.listen(port, () => {
     console.log(`Server is running at http://localhost:${port}/login.html`);

@@ -134,10 +134,10 @@ db.run(`
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL,
         phone TEXT,
-        email TEXT NOT NULL,
+        email TEXT NOT NULL UNIQUE,
         role TEXT NOT NULL,
         status BOOLEAN DEFAULT 1,
-        eklenme_tarihi TEXT DEFAULT CURRENT_TIMESTAMP
+        created_by TEXT DEFAULT CURRENT_TIMESTAMP
     );
 `, (err) => {
     if (err) {
@@ -157,6 +157,21 @@ db.run(`
 `, (err) => {
     if (err) console.error("Departments tablosu oluşturulamadı:", err.message);
     else console.log("Departments tablosu başarıyla oluşturuldu.");
+});
+db.run(`
+    CREATE TABLE IF NOT EXISTS gorevler (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    task_name TEXT NOT NULL,
+    assigned_to INTEGER DEFAULT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (assigned_to) REFERENCES personeller(id)
+);
+`, (err) => {
+    if (err) {
+        console.error("Gorevler tablosu oluşturulamadı:", err.message);
+    } else {
+        console.log("Gorevler tablosu başarıyla oluşturuldu.");
+    }
 });
 
     // Diğer tabloları eklemek için db.run fonksiyonlarını benzer şekilde ekleyin...
