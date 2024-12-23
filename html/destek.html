@@ -151,8 +151,6 @@
                 </select>
                 <label for="subject">Konu:</label>
                 <input type="text" id="subject" placeholder="Konu girin" required>
-                <label for="file">Dosya Eki:</label>
-                <input type="file" id="file">
                 <label for="description">Açıklama:</label>
                 <textarea id="description" placeholder="Açıklama girin" rows="4"></textarea>
                 <div class="form-actions">
@@ -190,8 +188,6 @@
             const department = document.getElementById('department').value;
             const subject = document.getElementById('subject').value;
             const description = document.getElementById('description').value;
-            const fileInput = document.getElementById('file');
-            const file = fileInput.files[0];
 
             if (!subject.trim()) {
                 alert("Lütfen konu girin.");
@@ -202,9 +198,6 @@
             formData.append("departman", department);
             formData.append("konu", subject);
             formData.append("aciklama", description);
-            if (file) {
-                formData.append("file", file);
-            }
 
             const response = await fetch(`${API_URL}/add-support-request`, {
                 method: "POST",

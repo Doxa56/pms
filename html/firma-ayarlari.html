@@ -102,34 +102,66 @@
                 </div>
                 <div>
                     <label>Firma Şehir</label>
-                    <input type="text" id="firmaSehir" value="Adana">
-                </div>
-                <div>
-                    <label>Firma Vergi Dairesi</label>
-                    <input type="text" id="firmaVergiDairesi" value="******">
+                    <select id="firmaSehir">
+                        <option value="">Şehir seçin</option>
+                    </select>
                 </div>
                 <div>
                     <label>Firma İlçe</label>
                     <select id="firmaIlce">
-                        <option value="Aladağ" selected>Aladağ (Karaisalı)</option>
+                        <option value="">İlçe seçin</option>
                     </select>
                 </div>
-                <div>
+                
+                <script>
+                    // Şehirleri yükle
+                    function loadCities() {
+                        fetch("https://turkiyeapi.herokuapp.com/api/v1/provinces")
+                            .then(response => response.json())
+                            .then(data => {
+                                const citySelect = document.getElementById("firmaSehir");
+                                citySelect.innerHTML = '<option value="">Şehir seçin</option>';
+                                data.data.forEach(city => {
+                                    citySelect.innerHTML += `<option value="${city.name}">${city.name}</option>`;
+                                });
+                            })
+                            .catch(error => console.error("Şehirleri yüklerken hata oluştu:", error));
+                    }
+                
+                    // İlçeleri yükle
+                    function loadDistricts(province) {
+                        fetch(`https://turkiyeapi.herokuapp.com/api/v1/districts?province=${province}`)
+                            .then(response => response.json())
+                            .then(data => {
+                                const districtSelect = document.getElementById("firmaIlce");
+                                districtSelect.innerHTML = '<option value="">İlçe seçin</option>';
+                                data.data.forEach(district => {
+                                    districtSelect.innerHTML += `<option value="${district.name}">${district.name}</option>`;
+                                });
+                            })
+                            .catch(error => console.error("İlçeleri yüklerken hata oluştu:", error));
+                    }
+                
+                    // Şehir seçimi değiştiğinde ilçeleri yükle
+                    document.getElementById("firmaSehir").addEventListener("change", function () {
+                        const selectedCity = this.value;
+                        if (selectedCity) {
+                            loadDistricts(selectedCity);
+                        } else {
+                            document.getElementById("firmaIlce").innerHTML = '<option value="">İlçe seçin</option>';
+                        }
+                    });
+                
+                    // Sayfa yüklendiğinde şehirleri yükle
+                    document.addEventListener("DOMContentLoaded", loadCities);
+                </script>
+                                <div>
                     <label>Firma Vergi No</label>
-                    <input type="text" id="firmaVergiNo" value="******">
+                    <input type="text" id="firmaVergiNo" value="1234567890">
                 </div>
                 <div class="half-width">
                     <label>Firma Adres</label>
                     <textarea id="firmaAdres"></textarea>
-                </div>
-                <div class="half-width">
-                    <label>Tema</label>
-                    <select id="tema">
-                        <option value="Tema 1">Tema 1</option>
-                        <option value="Tema 2">Tema 2</option>
-                        <option value="Tema 3">Tema 3</option>
-                        <option value="Tema 4" selected>Tema 4</option>
-                    </select>
                 </div>
             </div>
             <button type="button" id="guncelleBtn">Firma bilgilerini Güncelle</button>
@@ -144,11 +176,19 @@
                 return;
             }
 
+            const firmaTelefon = document.getElementById("firmaTelefon").value;
+            const firmaGSM = document.getElementById("firmaGSM").value;
+
+            if (!firmaTelefon && !firmaGSM) {
+                alert("En az bir telefon numarası girilmelidir (Firma Telefon veya Firma GSM).");
+                return;
+            }
+
             const formData = {
                 firmaAdi: document.getElementById("firmaAdi").value,
-                firmaTelefon: document.getElementById("firmaTelefon").value,
+                firmaTelefon: firmaTelefon,
                 yetkiliKisi: document.getElementById("yetkiliKisi").value,
-                firmaGSM: document.getElementById("firmaGSM").value,
+                firmaGSM: firmaGSM,
                 firmaSehir: document.getElementById("firmaSehir").value,
                 firmaVergiDairesi: document.getElementById("firmaVergiDairesi").value,
                 firmaVergiNo: document.getElementById("firmaVergiNo").value,
@@ -181,3 +221,27 @@
     </script>
 </body>
 </html>
+<script>
+    document.getElementById("firmaSehir").addEventListener("input", function () {
+        const sehir = this.value;
+        if (sehir.length > 2) {
+            fetch(`https://turkiyeapi.herokuapp.com/api/v1/provinces?name=${sehir}`)
+                .then(response => response.json())
+                .then(data => {
+                    const sehirSelect = document.createElement("select");
+                    sehirSelect.id = "sehirSelect";
+                    sehirSelect.innerHTML = data.map(item => `<option value="${item.name}">${item.name}</option>`).join("");
+                    this.parentNode.appendChild(sehirSelect);
+                    sehirSelect.addEventListener("change", function () {
+                        document.getElementById("firmaSehir").value = this.value;
+                        fetch(`https://turkiyeapi.herokuapp.com/api/v1/districts?province=${this.value}`)
+                            .then(response => response.json())
+                            .then(data => {
+                                const ilceSelect = document.getElementById("firmaIlce");
+                                ilceSelect.innerHTML = data.map(item => `<option value="${item.name}">${item.name}</option>`).join("");
+                            });
+                    });
+                });
+        }
+    });
+</script>

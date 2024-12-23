@@ -27,7 +27,7 @@
    <!-- Sol Menü (Sidebar) -->
    <div class="sidebar">
        <ul class="menu">
-           <li><a href="pano.html"><span class="icon blue"><i class="fas fa-home"></i></span><span class="text">Pano</span></a></li>
+           <li><a href="index.html"><span class="icon blue"><i class="fas fa-home"></i></span><span class="text">Ana Sayfa</span></a></li>
            <li><a href="is-listesi.html"><span class="icon pink"><i class="fas fa-tasks"></i></span><span class="text">İş Listesi</span></a></li>
            <li><a href="ajanda.html"><span class="icon yellow"><i class="fas fa-calendar-alt"></i></span><span class="text">Ajanda</span></a></li>
            <li>
@@ -70,7 +70,6 @@
                 <div class="line"></div>
                 <div id="circle-tanımlar" class="circle hidden"></div>
                 <ul class="submenu" id="tanımlarSubmenu">
-                    <li><a href="proje-durum-tanimlamalari.html" onclick="moveCircle('circle-tanımlar', this)">Proje Durum Tanımlamaları</a></li>
                     <li><a href="departman-tanimlamalari.html" onclick="moveCircle('circle-tanımlar', this)">Departman Tanımlamaları</a></li>
                     <li><a href="gorev-tanimlamalari.html" onclick="moveCircle('circle-tanımlar', this)">Görev Tanımlamaları</a></li>
                 </ul>
@@ -140,8 +139,8 @@
                     row.innerHTML = `
                         <td>${note.event_id}</td>
                         <td>${note.event_description}</td>
-                        <td>${new Date(note.user_input_date).toLocaleString()}</td>
-                        <td>${new Date(note.event_date).toLocaleString()}</td>
+                        <td>${new Date(note.user_input_date).toLocaleString('tr-TR')}</td>
+                        <td>${new Date(note.created_at).toLocaleString('tr-TR')}</td>
                     `;
                     tableBody.appendChild(row);
                 });
