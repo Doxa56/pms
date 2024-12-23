@@ -7,14 +7,28 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #f4f4f9;
+            background: url('background.png') no-repeat center center fixed;
+            background-size: cover;
             margin: 0;
             padding: 20px;
             color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
         }
 
         h1, h2 {
             color: #2c3e50;
+        }
+
+        .main-container {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            max-width: 1400px; /* Further increased max-width */
+            width: 100%;
         }
 
         .container {
@@ -30,7 +44,7 @@
             border-radius: 8px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             width: 100%;
-            max-width: 400px;
+            max-width: 700px; /* Further increased max-width */
         }
 
         form label {
@@ -113,48 +127,50 @@
     </style>
 </head>
 <body>
-    <h1>İş Listesi</h1>
+    <div class="main-container">
+        <h1>İş Listesi</h1>
 
-    <div class="container">
-        <!-- Görev Ekleme Formu -->
-        <form id="add-task-form">
-            <label for="task_name">Görev Adı:</label><br>
-            <input type="text" id="task_name" name="task_name" required><br><br>
+        <div class="container">
+            <!-- Görev Ekleme Formu -->
+            <form id="add-task-form">
+                <label for="task_name">Görev Adı:</label><br>
+                <input type="text" id="task_name" name="task_name" required><br><br>
 
-            <label for="description">Açıklama:</label><br>
-            <textarea id="description" name="description" required></textarea><br><br>
+                <label for="description">Açıklama:</label><br>
+                <textarea id="description" name="description" required></textarea><br><br>
 
-            <label for="due_date">Bitiş Tarihi:</label><br>
-            <input type="date" id="due_date" name="due_date" required><br><br>
+                <label for="due_date">Bitiş Tarihi:</label><br>
+                <input type="date" id="due_date" name="due_date" required><br><br>
 
-            <label for="status">Durum:</label><br>
-            <select id="status" name="status" required>
-                <option value="Pending">Beklemede</option>
-                <option value="In Progress">Devam Ediyor</option>
-                <option value="Completed">Tamamlandı</option>
-            </select><br><br>
+                <label for="status">Durum:</label><br>
+                <select id="status" name="status" required>
+                    <option value="Pending">Beklemede</option>
+                    <option value="In Progress">Devam Ediyor</option>
+                    <option value="Completed">Tamamlandı</option>
+                </select><br><br>
 
-            <button type="submit">Görev Ekle</button>
-        </form>
+                <button type="submit">Görev Ekle</button>
+            </form>
 
-        <!-- Görev Listesi -->
-        <div class="task-list">
-            <h2>Görevlerim</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Görev Adı</th>
-                        <th>Açıklama</th>
-                        <th>Bitiş Tarihi</th>
-                        <th>Durum</th>
-                        <th>Oluşturulma Tarihi</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <!-- Görevler dinamik olarak buraya eklenecek -->
-                </tbody>
-            </table>
+            <!-- Görev Listesi -->
+            <div class="task-list">
+                <h2>Görevlerim</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Görev Adı</th>
+                            <th>Açıklama</th>
+                            <th>Bitiş Tarihi</th>
+                            <th>Durum</th>
+                            <th>Oluşturulma Tarihi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Görevler dinamik olarak buraya eklenecek -->
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 

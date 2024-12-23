@@ -9,18 +9,19 @@
         body {
             font-family: Arial, sans-serif;
             margin: 20px;
+            background: url('background.png') no-repeat center center fixed;
+            background-size: cover;
         }
         h1, h2 {
             text-align: center;
             margin-bottom: 20px;
         }
-        form {
-            max-width: 600px;
-            margin: 0 auto 20px;
+        .form-container, .notes-container {
+            background-color: rgba(255, 255, 255, 0.8);
             padding: 20px;
             border: 1px solid #ccc;
             border-radius: 5px;
-            background-color: #f9f9f9;
+            margin-bottom: 20px;
         }
         label {
             display: block;
@@ -54,41 +55,45 @@
         th, td {
             padding: 10px;
             border: 1px solid #ccc;
-            text-align:
+            text-align: center;
             background-color: #f2f2f2;
         }
     </style>
 </head>
 <body>
     <h1>Ajanda - Not Tutma</h1>
-
-    <!-- Not Ekleme Formu -->
-    <form id="add-note-form">
-        <label for="note_content">Not:</label>
-        <textarea id="note_content" name="note_content" required></textarea>
-        <label for="note_date">Tarih ve Saat:</label>
-        <input type="datetime-local" id="note_date" name="note_date" required>
-        <button type="submit">Not Ekle</button>
-    </form>
-
-    <hr>
-
-    <!-- Not Listesi -->
-    <h2>Notlarım</h2>
-    <table>
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Not</th>
-                <th>Kullanıcı Girdiği Tarih</th>
-                <th>Kaydedilen Tarih</th>
-                <th>İşlem</th>
-            </tr>
-        </thead>
-        <tbody>
-            <!-- Notlar dinamik olarak buraya eklenecek -->
-        </tbody>
-    </table>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-12 form-container">
+                <!-- Not Ekleme Formu -->
+                <form id="add-note-form">
+                    <label for="note_content">Not:</label>
+                    <textarea id="note_content" name="note_content" required></textarea>
+                    <label for="note_date">Tarih ve Saat:</label>
+                    <input type="datetime-local" id="note_date" name="note_date" required>
+                    <button type="submit">Not Ekle</button>
+                </form>
+            </div>
+            <div class="col-md-12 notes-container">
+                <!-- Not Listesi -->
+                <h2>Notlarım</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Not</th>
+                            <th>Kullanıcı Girdiği Tarih</th>
+                            <th>Kaydedilen Tarih</th>
+                            <th>İşlem</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Notlar dinamik olarak buraya eklenecek -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
