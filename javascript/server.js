@@ -599,7 +599,7 @@ app.delete("/delete-personnel/:id", authenticateJWT, (req, res) => {
     });
 });
 // Şifre güncelleme
-app.post('/update-password', authenticateToken, (req, res) => {
+app.post('/update-password', authenticateJWT, (req, res) => {
     const { current_password, new_password } = req.body;
 
     if (!current_password || !new_password) {
@@ -634,7 +634,7 @@ app.post('/update-password', authenticateToken, (req, res) => {
 });
 
 // E-posta güncelleme
-app.post('/update-email', authenticateToken, (req, res) => {
+app.post('/update-email', authenticateJWT, (req, res) => {
     const { new_email, password } = req.body;
 
     if (!new_email || !password) {
