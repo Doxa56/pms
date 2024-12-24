@@ -77,6 +77,19 @@
         .task-section {
             margin-top: 30px;
         }
+
+        .delete-btn {
+            background-color: #FF4C4C;
+            color: #fff;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .delete-btn:hover {
+            background-color: #CC0000;
+        }
     </style>
 </head>
 <body>
@@ -107,7 +120,6 @@
                     <tr>
                         <th>ID</th>
                         <th>Görev Adı</th>
-                        <th>Durum</th>
                         <th>Atanan Personel</th>
                         <th>Oluşturulma Tarihi</th>
                         <th>İşlemler</th>
@@ -125,7 +137,7 @@
             const taskTableBody = document.getElementById("task-table-body");
             const taskForm = document.getElementById("task-form");
             const assignedToSelect = document.getElementById("assigned-to");
-    
+
             // Personel listesini getir ve dropdown'ı doldur
             async function fetchPersonnel() {
                 try {
@@ -134,14 +146,11 @@
                             "Authorization": `Bearer ${localStorage.getItem("token")}`
                         }
                     });
-    
+
                     if (!response.ok) {
-                        if (response.status === 401) {
-                            alert("Yetkilendirme hatası! Lütfen giriş yapın.");
-                        }
-                        throw new Error(`Personel listesi alınırken hata oluştu: ${response.status}`);
+                        throw new Error("Personel listesi alınırken hata oluştu.");
                     }
-    
+
                     const personnel = await response.json();
                     assignedToSelect.innerHTML = '<option value="" disabled selected>Personel seçin</option>';
                     personnel.forEach(person => {
@@ -151,10 +160,10 @@
                         assignedToSelect.appendChild(option);
                     });
                 } catch (error) {
-                    console.error("Personel listesi alınırken hata oluştu:", error);
+                    console.error(error);
                 }
             }
-    
+
             // Görev listesini getir ve tabloyu oluştur
             async function renderTable() {
                 try {
@@ -163,14 +172,14 @@
                             "Authorization": `Bearer ${localStorage.getItem("token")}`
                         }
                     });
-    
+
                     if (!response.ok) {
-                        throw new Error(`Görev listesi alınırken hata oluştu: ${response.status}`);
+                        throw new Error("Görev listesi alınırken hata oluştu.");
                     }
-    
+
                     const tasks = await response.json();
-                    taskTableBody.innerHTML = ""; // Tabloyu temizle
-    
+                    taskTableBody.innerHTML = "";
+
                     tasks.forEach(task => {
                         const row = document.createElement("tr");
                         row.innerHTML = `
@@ -179,81 +188,55 @@
                             <td>${task.assigned_to || "Atanmamış"}</td>
                             <td>${task.created_at ? new Date(task.created_at).toLocaleString() : "Tarih yok"}</td>
                             <td>
-                                <select class="assign-select" data-task-id="${task.id}">
-                                    <option value="">Atanmamış</option>
-                                </select>
+                                <button class="delete-btn" data-task-id="${task.id}">Sil</button>
                             </td>
                         `;
                         taskTableBody.appendChild(row);
-                        attachAssignDropdown(row.querySelector(".assign-select"), task.assigned_to);
+                    });
+
+                    // Silme butonlarına olay dinleyicisi ekle
+                    document.querySelectorAll(".delete-btn").forEach(button => {
+                        button.addEventListener("click", async (event) => {
+                            const taskId = event.target.getAttribute("data-task-id");
+                            if (confirm("Bu görevi silmek istediğinize emin misiniz?")) {
+                                await deleteTask(taskId);
+                                renderTable();
+                            }
+                        });
                     });
                 } catch (error) {
-                    console.error("Tablo güncellenirken hata oluştu:", error);
+                    console.error(error);
                 }
             }
-    
-            // Göreve personel atama dropdown'ını doldur
-            async function attachAssignDropdown(selectElement, currentAssigned) {
+
+            // Görevi sil
+            async function deleteTask(taskId) {
                 try {
-                    const response = await fetch("/api/personeller", {
+                    const response = await fetch(`/api/gorev-sil/${taskId}`, {
+                        method: "DELETE",
                         headers: {
                             "Authorization": `Bearer ${localStorage.getItem("token")}`
                         }
                     });
-    
+
                     if (!response.ok) {
-                        throw new Error(`Dropdown doldurulurken hata oluştu: ${response.status}`);
+                        throw new Error("Görev silinirken hata oluştu.");
                     }
-    
-                    const personnel = await response.json();
-                    personnel.forEach(person => {
-                        const option = document.createElement("option");
-                        option.value = person.id;
-                        option.textContent = `${person.name} (${person.role})`;
-                        if (person.name === currentAssigned) {
-                            option.selected = true;
-                        }
-                        selectElement.appendChild(option);
-                    });
-    
-                    // Dropdown'da değişiklik olduğunda görevi güncelle
-                    selectElement.addEventListener("change", async (event) => {
-                        const taskId = event.target.getAttribute("data-task-id");
-                        const assignedTo = event.target.value;
-    
-                        try {
-                            const response = await fetch(`/api/gorev-guncelle/${taskId}`, {
-                                method: "PUT",
-                                headers: {
-                                    "Content-Type": "application/json",
-                                    "Authorization": `Bearer ${localStorage.getItem("token")}`
-                                },
-                                body: JSON.stringify({ assigned_to: assignedTo })
-                            });
-    
-                            if (!response.ok) {
-                                throw new Error(`Görev atama güncellenirken hata oluştu: ${response.status}`);
-                            }
-                            renderTable(); // Güncellenmiş tabloyu tekrar yükle
-                        } catch (error) {
-                            console.error("Görev atama güncellenirken hata oluştu:", error);
-                        }
-                    });
                 } catch (error) {
-                    console.error("Atama dropdown doldurulurken hata oluştu:", error);
+                    console.error(error);
                 }
             }
-    
+
             // Yeni görev ekle
             taskForm.addEventListener("submit", async (event) => {
                 event.preventDefault();
-    
+
                 const formData = new FormData(taskForm);
                 const task = {
                     task_name: formData.get("task_name"),
                     assigned_to: formData.get("assigned_to") || null
                 };
-    
+
                 try {
                     const response = await fetch("/api/gorev-ekle", {
                         method: "POST",
@@ -263,19 +246,18 @@
                         },
                         body: JSON.stringify(task)
                     });
-    
+
                     if (!response.ok) {
-                        const errorText = await response.text();
-                        throw new Error(`Görev eklenirken hata oluştu: ${response.status} - ${errorText}`);
+                        throw new Error("Görev eklenirken hata oluştu.");
                     }
-    
-                    taskForm.reset(); // Formu temizle
-                    renderTable(); // Tabloyu güncelle
+
+                    taskForm.reset();
+                    renderTable();
                 } catch (error) {
-                    console.error("Görev eklenirken hata oluştu:", error);
+                    console.error(error);
                 }
             });
-    
+
             // Sayfa yüklendiğinde personel ve görevleri yükle
             (async () => {
                 await fetchPersonnel();
@@ -283,7 +265,5 @@
             })();
         });
     </script>
-    
 </body>
-
 </html>

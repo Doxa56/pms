@@ -820,6 +820,27 @@ app.put("/api/gorev-guncelle/:id", authenticateJWT, (req, res) => {
     });
 });
 
+// Görev Silme - DELETE /api/gorev-sil/:id
+app.delete("/api/gorev-sil/:id", authenticateJWT, (req, res) => {
+    const { id } = req.params;
+
+    const sql = `
+        DELETE FROM gorevler
+        WHERE id = ?
+    `;
+
+    db.run(sql, [id], function (err) {
+        if (err) {
+            console.error("Görev silinirken hata oluştu:", err.message);
+            return res.status(500).send("Görev silinirken hata oluştu.");
+        }
+        if (this.changes === 0) {
+            return res.status(404).send("Görev bulunamadı.");
+        }
+        res.send("Görev başarıyla silindi.");
+    });
+});
+
 
 // Start server
 app.listen(port, () => {
